@@ -68,9 +68,10 @@ export default function MineralSearchPage() {
     const part3 = (strunz10ed3 && strunz10ed3 !== '0') ? strunz10ed3.toUpperCase() : '';
     const part4 = (strunz10ed4 && strunz10ed4 !== '0' && strunz10ed4 !== '') ? strunz10ed4.padStart(2, '0') : '';
     
+    const letterPart = part2 + part3;
+    
     let code = part1;
-    if (part2) code += `.${part2}`;
-    if (part3) code += `.${part3}`;
+    if (letterPart) code += `.${letterPart}`;
     if (part4) code += `.${part4}`;
     
     return code;
