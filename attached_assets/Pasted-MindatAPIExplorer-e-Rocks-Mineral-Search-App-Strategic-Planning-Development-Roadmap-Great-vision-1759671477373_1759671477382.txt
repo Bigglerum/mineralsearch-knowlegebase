@@ -1,0 +1,521 @@
+MindatAPIExplorer → e-Rocks Mineral Search App
+Strategic Planning & Development Roadmap
+Great vision! Let me help you architect this transformation systematically. I'll break this down into phases, design considerations, and a clear roadmap.
+
+🎯 Core Nucleus to Preserve
+From the existing app, we're keeping:
+
+✅ Mindat API integration & proxy service
+✅ PostgreSQL database with Drizzle ORM
+✅ Mineral search functionality (by name, elements)
+✅ Locality search capability
+✅ API key management & rate limiting
+✅ Security middleware (auth, audit logging)
+
+
+📋 Feature Breakdown & Priority Analysis
+Phase 1: MVP Core (Launch-Ready POC) 🚀
+Goal: Working product with essential features
+
+Mobile-First UI Redesign (Week 1-2)
+
+e-Rocks branding (colors, logo, typography)
+Simple, intuitive search interface
+Responsive mineral/locality result cards
+Clean navigation
+
+
+Enhanced Search Results (Week 2-3)
+
+Display more Mindat fields (currently limited)
+Mineral details page with comprehensive data
+Locality details page with mineral list links
+Search query string generation for locality→minerals
+
+
+Basic Authentication (Week 1)
+
+Keep existing session-based auth (already working)
+Simple email/password registration
+Session persistence
+Defer OAuth to Phase 2
+
+
+Mineral Detail Pages (Week 3-4)
+
+Static Mindat data display
+"Generate Fact Sheet" button (placeholder)
+Mobile-optimized layout
+
+
+
+Deliverable: Working POC that can be deployed and tested with real users
+
+Phase 2: Monetization & OAuth 💰
+Goal: Production-ready with payment integration
+
+OAuth Integration (Week 5-6)
+
+Design: Hybrid approach recommended
+Options to evaluate:
+
+A) Main Site SSO: Users log in via e-rocks.com → JWT token → app
+B) Social OAuth: Google/Facebook/Apple Sign-In
+C) Magic Links: Email-based passwordless auth
+
+
+Session sync between main site and app
+
+
+Payment Integration (Week 6-7)
+
+Stripe/PayPal integration
+Tiered access levels:
+
+Free: 10 searches/day, basic data
+Premium: Unlimited searches, fact sheets, offline mode
+
+
+Subscription management dashboard
+
+
+API Key Marketplace (Week 7)
+
+Users can purchase their own Mindat API keys
+Tiered plans based on usage
+
+
+
+
+Phase 3: Fact Sheet Intelligence 🧠
+Goal: Dynamic knowledge base generation
+
+Fact Sheet Database Design (Week 8)
+
+   fact_sheets table:
+   - id (PK)
+   - mineral_id (FK to minerals)
+   - mindat_data (jsonb) - source of truth fields
+   - ai_content (jsonb) - Perplexity-generated content
+   - sections: { introduction, formation, properties, uses, locations }
+   - created_at, updated_at
+   - generation_status: 'pending' | 'generating' | 'completed' | 'error'
+   - cache_expires_at (for stale content refresh)
+
+Perplexity Pro Integration (Week 8-9)
+
+API integration for AI content generation
+Structured prompts for consistent output
+Cost optimization (cache, lazy generation)
+Error handling & retry logic
+
+
+Fact Sheet Workflow (Week 9)
+
+   User clicks "Fact Sheet" →
+   Check if fact_sheet exists for mineral_id →
+     EXISTS: Return cached sheet
+     NOT EXISTS: 
+       1. Show loading state
+       2. Trigger async generation job
+       3. Combine Mindat data + Perplexity content
+       4. Store in database
+       5. Return completed sheet
+
+Content Quality (Week 10)
+
+Human review queue for AI-generated content
+User feedback mechanism (helpful/not helpful)
+Periodic content refresh (30-90 days)
+
+
+
+
+Phase 4: Offline Mode & Gallery 📱
+Goal: Enhanced user experience
+
+Offline Functionality (Week 11-12)
+
+Progressive Web App (PWA) configuration
+Service Worker for caching
+IndexedDB for offline storage
+Sync strategy when online
+Downloaded fact sheets available offline
+
+
+Photo Gallery Integration (Week 13)
+
+e-rocks.com image API integration
+Image optimization & CDN
+Lightbox viewer
+Image metadata (photographer, locality, etc.)
+
+
+
+
+🎨 Design System: e-Rocks Mobile-First
+Brand Identity
+Primary Color: #2B5B84 (Deep Ocean Blue) - Trust, professionalism
+Secondary Color: #8B4513 (Saddle Brown) - Earth, minerals
+Accent Color: #FFD700 (Gold) - Premium, discovery
+Background: #F5F5F5 (Light Gray)
+Text: #333333 (Dark Gray)
+Typography
+Headings: Inter or Montserrat (Clean, modern)
+Body: Open Sans or Roboto (Readable)
+Monospace: Fira Code (for chemical formulas)
+Mobile-First Layout
+Breakpoints:
+- Mobile: 320px - 767px (default)
+- Tablet: 768px - 1023px
+- Desktop: 1024px+
+
+Component Hierarchy:
+1. Search Bar (sticky top)
+2. Filter Pills (crystal system, hardness, etc.)
+3. Result Cards (stacked vertically)
+4. Infinite scroll pagination
+Navigation Pattern
+Bottom Tab Bar (Mobile):
+- 🔍 Search
+- 📚 Fact Sheets (saved)
+- 👤 Profile
+- ⚙️ Settings
+
+Hamburger Menu (Desktop):
+- Expanded sidebar navigation
+
+🔧 Technical Architecture Changes
+1. Search Enhancement: Locality → Minerals Link
+Current: Locality search returns localities only
+Goal: Each locality shows minerals found there
+Implementation:
+typescript// New endpoint in routes.ts
+app.get('/api/localities/:id/minerals', async (req, res) => {
+  const { id } = req.params;
+  
+  // Call Mindat API
+  const response = await secureApiProxy.proxyRequest({
+    path: `/loc_mindat/${id}`,
+    method: 'GET',
+    parameters: { format: 'json' }
+  }, process.env.MINDAT_API_KEY);
+  
+  // Extract mineral list
+  const minerals = response.data.results || [];
+  
+  // Create search query string
+  const mineralNames = minerals.map(m => m.name).join(',');
+  const searchUrl = `/search?minerals=${encodeURIComponent(mineralNames)}`;
+  
+  res.json({ minerals, searchUrl });
+});
+UI Component:
+tsx// LocalityDetailPage.tsx
+<Card>
+  <h2>{locality.name}</h2>
+  <p>{locality.description}</p>
+  
+  <div className="minerals-section">
+    <h3>Minerals Found Here ({mineralCount})</h3>
+    <Link to={`/search?locality=${locality.id}`}>
+      View All Minerals →
+    </Link>
+  </div>
+</Card>
+
+2. Authentication Strategy Recommendation
+Recommended Approach: Hybrid OAuth + Session
+typescript// Authentication flow
+interface AuthStrategy {
+  // Phase 1: Email/Password (existing)
+  local: {
+    register: (email, password) => User;
+    login: (email, password) => Session;
+  };
+  
+  // Phase 2: OAuth providers
+  oauth: {
+    google: OAuthProvider;
+    facebook: OAuthProvider;
+    mainSite: SSOProvider; // e-rocks.com SSO
+  };
+  
+  // Phase 3: Magic links (optional)
+  magicLink: {
+    sendEmail: (email) => void;
+    verify: (token) => Session;
+  };
+}
+
+// Session sync with main site
+interface SessionSync {
+  // Shared session token (JWT)
+  validateMainSiteToken: (jwt: string) => User;
+  
+  // Cross-domain session
+  cookieDomain: '.e-rocks.com'; // Works on app.e-rocks.com
+  
+  // API endpoint on main site
+  mainSiteAuthEndpoint: 'https://e-rocks.com/api/auth/validate';
+}
+Schema Addition:
+typescript// shared/schema.ts - Add to users table
+export const users = pgTable("users", {
+  // ... existing fields
+  oauthProvider: varchar("oauth_provider", { length: 50 }), // 'google', 'facebook', 'erocks'
+  oauthId: varchar("oauth_id", { length: 255 }), // External user ID
+  mainSiteUserId: integer("main_site_user_id"), // Link to e-rocks.com user
+  subscriptionTier: varchar("subscription_tier", { length: 20 }).default('free'), // 'free', 'premium', 'pro'
+  subscriptionExpiresAt: timestamp("subscription_expires_at"),
+  stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
+});
+
+3. Fact Sheet Database Schema
+typescript// shared/schema.ts - New tables
+
+export const factSheets = pgTable("fact_sheets", {
+  id: serial("id").primaryKey(),
+  mineralId: integer("mineral_id").notNull().references(() => minerals.id),
+  
+  // Mindat source of truth data (selected fields)
+  mindatData: jsonb("mindat_data").notNull(), // { formula, crystal_system, hardness, etc. }
+  
+  // AI-generated content sections
+  aiContent: jsonb("ai_content"), // { introduction, formation, properties, uses, notable_locations }
+  
+  // Generation metadata
+  generationStatus: varchar("generation_status", { length: 20 }).default('pending'), // 'pending' | 'generating' | 'completed' | 'error'
+  generationError: text("generation_error"),
+  perplexityPrompt: text("perplexity_prompt"), // Store prompt for debugging
+  
+  // Quality control
+  reviewStatus: varchar("review_status", { length: 20 }).default('unreviewed'), // 'unreviewed' | 'approved' | 'needs_revision'
+  reviewedBy: integer("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  
+  // User engagement
+  viewCount: integer("view_count").default(0),
+  helpfulVotes: integer("helpful_votes").default(0),
+  unhelpfulVotes: integer("unhelpful_votes").default(0),
+  
+  // Caching & freshness
+  cacheExpiresAt: timestamp("cache_expires_at"), // Refresh after 30-90 days
+  lastRefreshedAt: timestamp("last_refreshed_at"),
+  
+  // Images
+  featuredImageUrl: varchar("featured_image_url", { length: 512 }),
+  galleryImages: jsonb("gallery_images").default([]), // Array of image objects
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const factSheetVotes = pgTable("fact_sheet_votes", {
+  id: serial("id").primaryKey(),
+  factSheetId: integer("fact_sheet_id").references(() => factSheets.id),
+  userId: integer("user_id").references(() => users.id),
+  voteType: varchar("vote_type", { length: 10 }).notNull(), // 'helpful' | 'unhelpful'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+4. Perplexity Pro Integration Service
+typescript// server/services/perplexity-service.ts
+
+import fetch from 'node-fetch';
+
+export class PerplexityService {
+  private static instance: PerplexityService;
+  private readonly apiKey: string;
+  private readonly baseUrl = 'https://api.perplexity.ai';
+
+  private constructor() {
+    this.apiKey = process.env.PERPLEXITY_API_KEY!;
+  }
+
+  static getInstance(): PerplexityService {
+    if (!PerplexityService.instance) {
+      PerplexityService.instance = new PerplexityService();
+    }
+    return PerplexityService.instance;
+  }
+
+  async generateFactSheetContent(mineralData: {
+    name: string;
+    formula: string;
+    crystalSystem: string;
+    hardness: string;
+    occurrence: string;
+  }): Promise<AIContent> {
+    
+    const prompt = this.buildFactSheetPrompt(mineralData);
+    
+    try {
+      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-sonar-large-128k-online',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a mineralogy expert writing educational content.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.2, // Low temperature for factual accuracy
+          max_tokens: 2000
+        })
+      });
+
+      const data = await response.json();
+      const content = data.choices[0].message.content;
+      
+      // Parse structured response
+      return this.parseAIResponse(content);
+      
+    } catch (error) {
+      console.error('Perplexity API error:', error);
+      throw new Error('Failed to generate fact sheet content');
+    }
+  }
+
+  private buildFactSheetPrompt(mineralData: any): string {
+    return `
+Create a comprehensive fact sheet for the mineral ${mineralData.name}.
+
+Mineral Information:
+- Chemical Formula: ${mineralData.formula}
+- Crystal System: ${mineralData.crystalSystem}
+- Mohs Hardness: ${mineralData.hardness}
+- Occurrence: ${mineralData.occurrence}
+
+Please provide the following sections in JSON format:
+
+{
+  "introduction": "A 2-3 sentence engaging introduction about the mineral",
+  "formation": "How this mineral forms in nature (2-3 paragraphs)",
+  "physical_properties": "Detailed description of physical properties",
+  "optical_properties": "Optical characteristics and identification tips",
+  "uses": "Industrial, commercial, and collectible uses",
+  "notable_locations": "Famous localities and occurrences worldwide",
+  "collectors_notes": "Tips for collectors and what to look for",
+  "interesting_facts": "3-5 interesting facts about this mineral"
+}
+
+Keep the tone educational yet accessible. Focus on accuracy and cite sources where possible.
+    `.trim();
+  }
+
+  private parseAIResponse(content: string): AIContent {
+    try {
+      // Remove markdown code blocks if present
+      const cleaned = content.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      return JSON.parse(cleaned);
+    } catch (error) {
+      console.error('Failed to parse AI response:', error);
+      throw new Error('Invalid AI response format');
+    }
+  }
+}
+
+interface AIContent {
+  introduction: string;
+  formation: string;
+  physical_properties: string;
+  optical_properties: string;
+  uses: string;
+  notable_locations: string;
+  collectors_notes: string;
+  interesting_facts: string;
+}
+
+📊 Development Roadmap Timeline
+Week 1-2:   Mobile UI + e-Rocks branding
+Week 2-3:   Enhanced search results
+Week 3-4:   Mineral detail pages
+Week 4:     Phase 1 POC DEPLOYMENT 🚀
+
+Week 5-6:   OAuth integration design & implementation
+Week 6-7:   Payment integration (Stripe)
+Week 7:     Phase 2 DEPLOYMENT (Monetization)
+
+Week 8-9:   Fact sheet database + Perplexity integration
+Week 9-10:  Fact sheet workflow + caching
+Week 10:    Phase 3 DEPLOYMENT (Intelligence)
+
+Week 11-12: PWA + offline mode
+Week 13:    Photo gallery integration
+Week 13:    Phase 4 DEPLOYMENT (Enhanced UX)
+
+🚀 Recommended Phase 1 POC Scope
+What to build FIRST for working core:
+✅ Must Have (POC Launch)
+
+Mobile-first UI with e-Rocks branding
+Enhanced mineral search (display more fields)
+Enhanced locality search (with mineral links)
+Mineral detail page (Mindat data only)
+Locality detail page (with "View Minerals" link)
+Basic email/password auth (existing system)
+Responsive design (mobile → desktop)
+
+⏳ Defer to Phase 2
+
+OAuth / SSO integration
+Payment / monetization
+Subscription tiers
+
+⏳ Defer to Phase 3
+
+Fact sheet generation
+Perplexity integration
+AI content database
+
+⏳ Defer to Phase 4
+
+Offline mode / PWA
+Photo gallery
+Advanced caching
+
+
+🎯 Next Immediate Steps
+What should we do RIGHT NOW?
+
+Design Review (30 minutes)
+
+Show me examples of e-Rocks branding (colors, logo)
+Confirm mobile-first design preferences
+Decide on navigation pattern (bottom tabs vs hamburger)
+
+
+Create UI Mockups (1-2 hours)
+
+Search page (mobile first)
+Mineral detail page
+Locality detail page
+
+
+Start Phase 1 Development (Week 1)
+
+Branch: feature/mobile-redesign
+Start with search page UI
+Integrate e-Rocks branding
+
+
+
+Should I:
+
+A) Create wireframes/mockups for the Phase 1 pages?
+B) Start refactoring the existing search UI with mobile-first design?
+C) Design the OAuth/monetization architecture first?
+D) Something else?
+
+What's your priority?

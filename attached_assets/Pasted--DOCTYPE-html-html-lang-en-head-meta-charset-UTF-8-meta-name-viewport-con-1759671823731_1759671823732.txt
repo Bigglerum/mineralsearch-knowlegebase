@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e-rocks Interactive Wheel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* Header */
+        .header {
+            background-color: #D2441C;
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            background-color: white;
+            color: #D2441C;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .logo .logo-prefix {
+            color: #D2441C;
+        }
+
+        .logo .logo-suffix {
+            color: black;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .search-icon, .profile-icon, .theme-toggle {
+            width: 24px;
+            height: 24px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background-color: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        /* Content */
+        .content-container {
+            margin-top: 60px;
+            min-height: calc(100vh - 200px);
+            position: relative;
+            padding: 20px;
+            padding-bottom: 160px; /* Add space for nav wheel */
+        }
+
+        .content-view {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .content-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #3A3A3A;
+            margin-bottom: 10px;
+        }
+
+        .section-subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .demo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .demo-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        /* Navigation Wheel */
+        .nav-wheel-container {
+            position: fixed;
+            bottom: -40px;
+            left: 0;
+            right: 0;
+            background: white;
+            border: none;
+            border-top: 3px solid #D2441C;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            z-index: 1000;
+            isolation: isolate; /* Prevent visual blending */
+        }
+
+        .nav-wheel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 25px;
+            position: relative;
+            height: 150px;
+            border: none;
+        }
+
+        .wheel-center {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #D2441C, #B73316);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(210, 68, 28, 0.4);
+            z-index: 10;
+            position: relative;
+        }
+
+        .wheel-center:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(210, 68, 28, 0.5);
+        }
+
+        .wheel-center.rotating {
+            transform: rotate(180deg) scale(1.1);
+        }
+
+        /* Navigation items container */
+        .nav-items {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            transition: transform 0.5s ease;
+            border: none;
+        }
+
+        .nav-items.expanded {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        /* Individual nav items */
+        .nav-item {
+            position: absolute;
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #3A3A3A, #2A2A2A);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: scale(0.3);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .nav-item svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            transition: transform 0.3s ease;
+            will-change: transform;
+        }
+
+        /* Counter-rotate SVG icons to keep them upright */
+        .nav-item-icon {
+            transition: transform 0.3s ease;
+            will-change: transform;
+        }
+
+        .nav-items.expanded .nav-item {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Highlight effect */
+        .nav-wheel::before {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: radial-gradient(circle, rgba(210, 68, 28, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 2;
+            border: none;
+        }
+
+        .nav-wheel.expanded::before {
+            opacity: 1;
+        }
+
+        /* Active item styling */
+        .nav-item.active-at-top {
+            background: linear-gradient(135deg, #FF6B35, #D2441C) !important;
+            box-shadow: 0 0 25px rgba(255, 107, 53, 0.8), 0 4px 15px rgba(0,0,0,0.2) !important;
+            border: 2px solid rgba(255, 255, 255, 0.9) !important;
+            transform: scale(1.3) !important;
+        }
+
+        /* Perfect 10-card positioning using trigonometry */
+        /* 360° / 10 = 36° per card, radius = 90px from center */
+        .nav-item:nth-child(1) { 
+            /* 0° - Top */
+            top: calc(50% - 90px - 19px); 
+            left: calc(50% - 19px); 
+        }
+        .nav-item:nth-child(2) { 
+            /* 36° */
+            top: calc(50% - 72.7px - 19px); 
+            left: calc(50% + 52.9px - 19px); 
+        }
+        .nav-item:nth-child(3) { 
+            /* 72° */
+            top: calc(50% - 27.8px - 19px); 
+            left: calc(50% + 85.6px - 19px); 
+        }
+        .nav-item:nth-child(4) { 
+            /* 108° */
+            top: calc(50% + 27.8px - 19px); 
+            left: calc(50% + 85.6px - 19px); 
+        }
+        .nav-item:nth-child(5) { 
+            /* 144° */
+            top: calc(50% + 72.7px - 19px); 
+            left: calc(50% + 52.9px - 19px); 
+        }
+        .nav-item:nth-child(6) { 
+            /* 180° - Bottom */
+            top: calc(50% + 90px - 19px); 
+            left: calc(50% - 19px); 
+        }
+        .nav-item:nth-child(7) { 
+            /* 216° */
+            top: calc(50% + 72.7px - 19px); 
+            left: calc(50% - 52.9px - 19px); 
+        }
+        .nav-item:nth-child(8) { 
+            /* 252° */
+            top: calc(50% + 27.8px - 19px); 
+            left: calc(50% - 85.6px - 19px); 
+        }
+        .nav-item:nth-child(9) { 
+            /* 288° */
+            top: calc(50% - 27.8px - 19px); 
+            left: calc(50% - 85.6px - 19px); 
+        }
+        .nav-item:nth-child(10) { 
+            /* 324° */
+            top: calc(50% - 72.7px - 19px); 
+            left: calc(50% - 52.9px - 19px); 
+        }
+
+        /* Remove transform positioning for expanded state */
+        .nav-items.expanded .nav-item:nth-child(1),
+        .nav-items.expanded .nav-item:nth-child(3),
+        .nav-items.expanded .nav-item:nth-child(6),
+        .nav-items.expanded .nav-item:nth-child(9) {
+            transform: scale(1);
+        }
+
+        /* Night mode */
+        body.night-mode {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        body.night-mode .content-container {
+            background-color: #1a1a1a;
+        }
+
+        body.night-mode .section-header {
+            color: #e0e0e0;
+        }
+
+        body.night-mode .section-subtitle {
+            color: #a0a0a0;
+        }
+
+        body.night-mode .demo-card {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border: 2px solid #404040;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        
+        body.night-mode .demo-card h3 {
+            color: #f0f0f0;
+        }
+        
+        body.night-mode .demo-card p {
+            color: #b0b0b0;
+        }
+
+        body.night-mode .demo-icon {
+            filter: brightness(0.8);
+        }
+
+        body.night-mode .card-image {
+            background-color: #404040;
+            color: #b0b0b0;
+        }
+
+        body.night-mode .card-title {
+            color: #f0f0f0;
+        }
+
+        body.night-mode .card-details {
+            color: #c0c0c0;
+        }
+
+        body.night-mode .search-box,
+        body.night-mode .chat-input,
+        body.night-mode .archive-search-input {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border-color: #D2441C;
+        }
+
+        body.night-mode .search-box::placeholder,
+        body.night-mode .chat-input::placeholder,
+        body.night-mode .archive-search-input::placeholder {
+            color: #888;
+        }
+
+        body.night-mode .footer-links a {
+            color: #c0c0c0;
+        }
+
+        body.night-mode .footer-links a {
+            color: #c0c0c0;
+        }
+
+        body.night-mode .footer-links a:hover {
+            color: #D2441C;
+        }
+
+        body.night-mode .stat-number {
+            color: #f0f0f0;
+        }
+
+        body.night-mode .stat-label {
+            color: #c0c0c0;
+        }
+
+        body.night-mode .message-content {
+            background: #404040;
+            color: #e0e0e0;
+        }
+
+        body.night-mode .user-message .message-content {
+            background: #D2441C;
+            color: white;
+        }
+
+        body.night-mode .panel-item:hover {
+            background-color: #404040;
+        }
+
+        body.night-mode .item-info strong {
+            color: #f0f0f0;
+        }
+
+        body.night-mode .item-info span {
+            color: #c0c0c0;
+        }
+
+        body.night-mode .section-title {
+            color: #f0f0f0;
+        }
+
+        body.night-mode .nav-wheel-container {
+            background: #2a2a2a;
+            border: none;
+            border-top: 3px solid #D2441C;
+            isolation: isolate; /* Prevent visual blending */
+        }
+
+        body.night-mode .nav-item {
+            background: linear-gradient(135deg, #e0e0e0, #c0c0c0);
+            color: #2a2a2a;
+        }
+
+        body.night-mode .nav-item.active-at-top {
+            background: linear-gradient(135deg, #FF6B35, #D2441C) !important;
+            color: white !important;
+        }
+
+        /* Footer Links */
+        .footer-links {
+            position: absolute;
+            top: 3px; /* Pinned directly to underside of 3px red border */
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 10px 20px;
+            background-color: #f0f0f0;  /* Light gray background */
+            font-size: 12px;
+        }
+
+        .footer-links a {
+            color: #666;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #D2441C;
+        }
+
+        body.night-mode .footer-links {
+            background-color: #333;
+        }
+
+        body.night-mode .footer-links a {
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <span class="logo-prefix">e</span><span class="logo-suffix">-rocks</span>
+        </div>
+        <div class="header-right">
+            <div class="search-icon">🔍</div>
+            <div class="theme-toggle" onclick="toggleTheme()" title="Toggle Day/Night Mode">
+                <span id="theme-icon">🌙</span>
+            </div>
+            <div class="profile-icon">👤</div>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="content-container">
+        <div class="content-view active" id="home-view">
+            <div class="section-header">
+                <h1 class="section-title">🏠 HOME</h1>
+                <p class="section-subtitle">Welcome to e-rocks mineral auctions</p>
+            </div>
+            <div class="demo-card">
+                <div class="demo-icon">🪨</div>
+                <h3>Live Auctions</h3>
+                <p>Browse active mineral auctions ending soon</p>
+            </div>
+        </div>
+
+        <div class="content-view" id="search-view">
+            <div class="section-header">
+                <h1 class="section-title">🔍 SEARCH</h1>
+                <p class="section-subtitle">Find specific minerals and specimens</p>
+            </div>
+            <div class="demo-card">
+                <div class="demo-icon">🔎</div>
+                <h3>Advanced Search</h3>
+                <p>Filter by mineral type, locality, price range and more</p>
+            </div>
+        </div>
+
+        <div class="content-view" id="auctions-view">
+            <div class="section-header">
+                <h1 class="section-title">🔨 AUCTIONS</h1>
+                <p class="section-subtitle">Live bidding on mineral specimens</p>
+            </div>
+            <div class="demo-card">
+                <div class="demo-icon">⚡</div>
+                <h3>Live Bidding</h3>
+                <p>Participate in real-time mineral auctions</p>
+            </div>
+        </div>
+
+        <div class="content-view" id="fixed-view">
+            <div class="section-header">
+                <h1 class="section-title">💰 FIXED PRICE</h1>
+                <p class="section-subtitle">Buy minerals at set prices</p>
+            </div>
+            <div class="demo-card">
+                <div class="demo-icon">💎</div>
+                <h3>Buy It Now</h3>
+                <p>Purchase minerals instantly at fixed prices</p>
+            </div>
+        </div>
+
+        <div class="content-view" id="collections-view">
+            <div class="section-header">
+                <h1 class="section-title">📦 COLLECTIONS</h1>
+                <p class="section-subtitle">Manage your mineral collections</p>
+            </div>
+            <div class="demo-card">
+                <div class="demo-icon">🗂️</div>
+                <h3>My Collections</h3>
+                <p>Organize and track your mineral specimens</p>
+            </div>
+        </div>
+
+        <div class="content-view" id="favorites-view">
+            <div class="section-header">
+                <h1 class="section-title">⭐ FAVORITES</h1>
+                <p class="section-subtitle">Your starred minerals and auctions</p>
+            </div>
+            <div class="demo-card">
+                <div class="demo-icon">💖</div>
+                <h3>Saved Items</h3>
+                <p>Quick access to your favorite minerals</p>
+            </div>
+        </div>
+
+        <div class="content-view" id="profile-view">
+            <div class="section-header">
+                <h1 class="section-title">👤 PROFILE</h1>
+                <p class="section-subtitle">Account settings and history</p>
+            </div>
+            <div class="demo-card">
+                <div class="demo-icon">⚙️</div>
+                <h3>Account Settings</h3>
+                <p>Manage your profile and preferences</p>
+            </div>
+        </div>
+
+        <div class="content-view" id="instagram-view">
+            <div class="section-header">
+                <h1 class="section-title">📸 INSTAGRAM</h1>
+                <p class="section-subtitle">Social mineral community</p>
+            </div>
+            <div class="demo-card">
+                <div class="demo-icon">📱</div>
+                <h3>Social Feed</h3>
+                <p>Share and discover mineral photography</p>
+            </div>
+        </div>
+
+        <div class="content-view" id="chatbot-view">
+            <div class="section-header">
+                <h1 class="section-title">🤖 AI ASSISTANT</h1>
+                <p class="section-subtitle">Mineral knowledge chatbot</p>
+            </div>
+            <div class="demo-card">
+                <div class="demo-icon">🧠</div>
+                <h3>MineralBot</h3>
+                <p>Ask questions about geology and mineral identification</p>
+            </div>
+        </div>
+
+        <div class="content-view" id="archive-view">
+            <div class="section-header">
+                <h1 class="section-title">📚 DATABASE</h1>
+                <p class="section-subtitle">Comprehensive mineral archive</p>
+            </div>
+            <div class="demo-card">
+                <div class="demo-icon">🗄️</div>
+                <h3>Mineral Archive</h3>
+                <p>Browse 750,000+ cataloged mineral specimens</p>
+            </div>
+        </div>
+        
+        <!-- Footer Links -->
+        <div class="footer-links">
+            <a href="#help">HELP</a>
+            <a href="#terms">TERMS & CONDITIONS</a>
+            <a href="#contact">CONTACT US</a>
+        </div>
+    </div>
+
+    <!-- Navigation Wheel -->
+    <div class="nav-wheel-container">
+        <div class="nav-wheel" id="nav-wheel">
+            <div class="wheel-center" onclick="toggleWheel()">
+                <span id="wheel-text">MENU</span>
+            </div>
+            
+            <div class="nav-items" id="nav-items">
+                <div class="nav-item" onclick="navigateTo('home-view', this, 0)" title="Home">
+                    <span class="nav-item-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        </svg>
+                    </span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('search-view', this, 1)" title="Search">
+                    <span class="nav-item-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="M21 21l-4.35-4.35"/>
+                        </svg>
+                    </span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('auctions-view', this, 2)" title="Auctions">
+                    <span class="nav-item-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+                            <path d="M9 12l2 2 4-4"/>
+                            <circle cx="12" cy="12" r="9"/>
+                        </svg>
+                    </span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('fixed-view', this, 3)" title="Fixed Price">
+                    <span class="nav-item-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+                            <line x1="12" y1="1" x2="12" y2="23"/>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                    </span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('collections-view', this, 4)" title="Collections">
+                    <span class="nav-item-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        </svg>
+                    </span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('favorites-view', this, 5)" title="Favorites">
+                    <span class="nav-item-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+                            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>
+                        </svg>
+                    </span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('profile-view', this, 6)" title="Profile">
+                    <span class="nav-item-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('instagram-view', this, 7)" title="Instagram">
+                    <span class="nav-item-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                            <circle cx="12" cy="12" r="4"/>
+                        </svg>
+                    </span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('chatbot-view', this, 8)" title="Chatbot">
+                    <span class="nav-item-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </span>
+                </div>
+                <div class="nav-item" onclick="navigateTo('archive-view', this, 9)" title="Archive">
+                    <span class="nav-item-icon">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isWheelExpanded = false;
+        let currentView = 'home-view';
+        let isNightMode = false;
+        let isDragging = false;
+        let totalRotation = 0;
+        let lastAngle = 0;
+        let currentIndex = 0;
+        
+        const views = [
+            'home-view', 'search-view', 'auctions-view', 'fixed-view',
+            'collections-view', 'favorites-view', 'profile-view', 'instagram-view',
+            'chatbot-view', 'archive-view'
+        ];
+
+        function toggleTheme() {
+            isNightMode = !isNightMode;
+            document.body.classList.toggle('night-mode', isNightMode);
+            document.getElementById('theme-icon').textContent = isNightMode ? '☀️' : '🌙';
+        }
+
+        function switchToView(viewId) {
+            document.querySelectorAll('.content-view').forEach(view => {
+                view.classList.remove('active');
+            });
+            document.getElementById(viewId).classList.add('active');
+            currentView = viewId;
+        }
+
+        function toggleWheel() {
+            const wheelCenter = document.querySelector('.wheel-center');
+            const navItems = document.getElementById('nav-items');
+            const navWheel = document.getElementById('nav-wheel');
+            const wheelText = document.getElementById('wheel-text');
+            
+            isWheelExpanded = !isWheelExpanded;
+            
+            if (isWheelExpanded) {
+                wheelCenter.classList.add('rotating');
+                navItems.classList.add('expanded');
+                navWheel.classList.add('expanded');
+                wheelText.textContent = '✕';
+                
+                // Highlight first item
+                updateHighlight(0);
+                totalRotation = 0;
+                navItems.style.transform = `translate(-50%, -50%) scale(1.1) rotate(0deg)`;
+            } else {
+                wheelCenter.classList.remove('rotating');
+                navItems.classList.remove('expanded');
+                navWheel.classList.remove('expanded');
+                wheelText.textContent = 'MENU';
+                
+                // Clear highlights
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active-at-top');
+                });
+            }
+        }
+
+        function navigateTo(viewId, clickedItem, index) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active-at-top');
+            });
+            
+            clickedItem.classList.add('active-at-top');
+            switchToView(viewId);
+            currentIndex = index;
+            
+            setTimeout(() => {
+                if (isWheelExpanded) {
+                    toggleWheel();
+                }
+            }, 500);
+        }
+
+        function updateHighlight(index) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active-at-top');
+            });
+            
+            const items = document.querySelectorAll('.nav-item');
+            if (items[index]) {
+                items[index].classList.add('active-at-top');
+                switchToView(views[index]);
+                currentIndex = index;
+            }
+        }
+
+        function getAngle(centerX, centerY, pointX, pointY) {
+            return Math.atan2(pointY - centerY, pointX - centerX) * 180 / Math.PI;
+        }
+
+        function getCenter(element) {
+            const rect = element.getBoundingClientRect();
+            return {
+                x: rect.left + rect.width / 2,
+                y: rect.top + rect.height / 2
+            };
+        }
+
+        // Drag functionality
+        function handleStart(e) {
+            if (!isWheelExpanded) return;
+            
+            isDragging = true;
+            const navItems = document.getElementById('nav-items');
+            const center = getCenter(navItems);
+            const point = e.touches ? e.touches[0] : e;
+            
+            lastAngle = getAngle(center.x, center.y, point.clientX, point.clientY);
+            navItems.style.transition = 'none';
+            e.preventDefault();
+        }
+
+        function updateIconRotations() {
+            const icons = document.querySelectorAll('.nav-item-icon');
+            icons.forEach(icon => {
+                icon.style.transform = `rotate(${-totalRotation}deg)`;
+            });
+        }
+
+        function handleMove(e) {
+            if (!isDragging || !isWheelExpanded) return;
+            
+            const navItems = document.getElementById('nav-items');
+            const center = getCenter(navItems);
+            const point = e.touches ? e.touches[0] : e;
+            
+            const currentAngle = getAngle(center.x, center.y, point.clientX, point.clientY);
+            let angleDelta = currentAngle - lastAngle;
+            
+            // Normalize angle
+            if (angleDelta > 180) angleDelta -= 360;
+            if (angleDelta < -180) angleDelta += 360;
+            
+            totalRotation += angleDelta * 0.5; // Damping
+            navItems.style.transform = `translate(-50%, -50%) scale(1.1) rotate(${totalRotation}deg)`;
+            
+            // Counter-rotate icons to keep them upright
+            updateIconRotations();
+            
+            // Update highlight based on rotation
+            const normalizedRotation = (((-totalRotation) % 360) + 360) % 360;
+            const highlightIndex = Math.round(normalizedRotation / 36) % 10;
+            updateHighlight(highlightIndex);
+            
+            lastAngle = currentAngle;
+            e.preventDefault();
+        }
+
+        function handleEnd(e) {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            const navItems = document.getElementById('nav-items');
+            
+            // Snap to nearest position
+            const snapAngle = Math.round(totalRotation / 36) * 36;
+            navItems.style.transition = 'transform 0.5s ease-out';
+            totalRotation = snapAngle;
+            navItems.style.transform = `translate(-50%, -50%) scale(1.1) rotate(${snapAngle}deg)`;
+            
+            // Update icon rotations with transition
+            const icons = document.querySelectorAll('.nav-item-icon');
+            icons.forEach(icon => {
+                icon.style.transition = 'transform 0.5s ease-out';
+                icon.style.transform = `rotate(${-snapAngle}deg)`;
+            });
+            
+            setTimeout(() => {
+                navItems.style.transition = 'none';
+                icons.forEach(icon => {
+                    icon.style.transition = 'transform 0.3s ease';
+                });
+            }, 500);
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const navItems = document.getElementById('nav-items');
+            
+            // Mouse events
+            navItems.addEventListener('mousedown', handleStart);
+            document.addEventListener('mousemove', handleMove);
+            document.addEventListener('mouseup', handleEnd);
+            
+            // Touch events
+            navItems.addEventListener('touchstart', handleStart, { passive: false });
+            document.addEventListener('touchmove', handleMove, { passive: false });
+            document.addEventListener('touchend', handleEnd);
+            
+            // Prevent context menu
+            navItems.addEventListener('contextmenu', e => e.preventDefault());
+        });
+    </script>
+</body>
+</html>
