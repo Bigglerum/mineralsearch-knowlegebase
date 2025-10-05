@@ -12,10 +12,14 @@ import SettingsPage from "@/pages/settings";
 import MineralDetailPage from "@/pages/mineral-detail";
 import NotFound from "@/pages/not-found";
 
+function HomePage() {
+  return <Redirect to="/search" />;
+}
+
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={() => <Redirect to="/search" />} />
+      <Route path="/" component={HomePage} />
       <Route path="/search" component={MineralSearchPage} />
       <Route path="/locality" component={LocalitySearchPage} />
       <Route path="/strunz" component={StrunzPage} />
