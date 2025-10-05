@@ -74,6 +74,17 @@ export default function MineralSearchPage() {
       'n': 'ⁿ'
     };
     
+    const htmlEntities: { [key: string]: string } = {
+      '&middot;': '·',
+      '&nbsp;': ' ',
+      '&times;': '×',
+      '&deg;': '°',
+      '&plusmn;': '±',
+      '&lt;': '<',
+      '&gt;': '>',
+      '&amp;': '&'
+    };
+    
     let result = html;
     
     result = result.replace(/<sub>(.*?)<\/sub>/g, (match, content) => {
@@ -87,6 +98,10 @@ export default function MineralSearchPage() {
     result = result.replace(/<mi>/g, '').replace(/<\/mi>/g, '');
     result = result.replace(/\{10_11\}/g, '{10̄11}');
     result = result.replace(/\{([0-9]+)_([0-9]+)\}/g, '{$1̄$2}');
+    
+    Object.entries(htmlEntities).forEach(([entity, char]) => {
+      result = result.replace(new RegExp(entity, 'g'), char);
+    });
     
     return result;
   };
