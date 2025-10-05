@@ -181,19 +181,23 @@ export default function MineralSearchPage() {
               const isGroup = mineral.name?.toLowerCase().includes('group') || 
                              mineral.name?.toLowerCase().includes('series');
               const isExpanded = expandedGroups.has(mineral.id);
-              const groupMembers = isExpanded && groupMembersData 
+              
+              const potentialGroupMembers = isGroup && groupMembersData 
                 ? (groupMembersData as { results: any[] }).results.filter((m: any) => 
                     m.id !== mineral.id && 
                     m.name?.toLowerCase().includes(mineral.name?.toLowerCase().replace(/\s+(group|series)$/i, ''))
                   )
                 : [];
               
+              const groupMembers = isExpanded ? potentialGroupMembers : [];
+              const hasMembers = potentialGroupMembers.length > 0;
+              
               return (
                 <div key={mineral.id}>
                   <Card data-testid={`card-mineral-${mineral.id}`}>
                     <CardHeader>
                       <div className="flex items-start gap-2">
-                        {isGroup && (
+                        {isGroup && hasMembers && (
                           <button
                             onClick={() => toggleGroupExpansion(mineral.id)}
                             className="flex-shrink-0 w-6 h-6 rounded-full bg-[#EE2C25] flex items-center justify-center text-white hover:bg-[#cc0000] transition-colors mt-1"
