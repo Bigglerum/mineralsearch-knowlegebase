@@ -71,7 +71,6 @@ export class MindatAPIService {
     if (params.entrytype !== undefined) queryParams.append('entrytype', params.entrytype.toString());
 
     const url = `${this.baseUrl}/geomaterials/?${queryParams.toString()}`;
-    console.log('Mindat API URL:', url);
 
     try {
       const response = await fetch(url, {

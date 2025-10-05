@@ -21,14 +21,31 @@ export default function MineralSearchPage() {
     setActiveSearch(searchQuery);
   };
 
-  const minerals = (data as { results: Mineral[] })?.results || [];
+  const minerals = (data as { results: any[] })?.results || [];
+
+  const stripHtmlTags = (html: string) => {
+    if (!html) return '';
+    return html.replace(/<sub>/g, '').replace(/<\/sub>/g, '').replace(/<sup>/g, '').replace(/<\/sup>/g, '');
+  };
+
+  const getStrunzCode = (mineral: any) => {
+    const { strunz10ed1, strunz10ed2, strunz10ed3, strunz10ed4 } = mineral;
+    if (!strunz10ed1 || strunz10ed1 === '0') return null;
+    
+    let code = strunz10ed1;
+    if (strunz10ed2 && strunz10ed2 !== '0') code += `.${strunz10ed2}`;
+    if (strunz10ed3 && strunz10ed3 !== '0') code += `.${strunz10ed3}`;
+    if (strunz10ed4 && strunz10ed4 !== '0' && strunz10ed4 !== '') code += `.${strunz10ed4}`;
+    
+    return code;
+  };
 
   return (
     <div className="min-h-screen pb-40 pt-20 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2" data-testid="text-page-title">Mineral Search</h1>
-          <p className="text-muted-foreground">Search minerals by name, formula, or crystal system</p>
+          <p className="text-muted-foreground">Search minerals by name</p>
         </div>
 
         <form onSubmit={handleSearch} className="mb-6">
@@ -75,42 +92,35 @@ export default function MineralSearchPage() {
 
         {!isLoading && minerals.length > 0 && (
           <div className="grid gap-4" data-testid="list-minerals">
-            {minerals.map((mineral) => (
-              <Link key={mineral.id} href={`/mineral/${mineral.id}`}>
-                <Card className="hover-elevate cursor-pointer" data-testid={`card-mineral-${mineral.id}`}>
-                  <CardHeader>
-                    <CardTitle data-testid={`text-mineral-name-${mineral.id}`}>{mineral.name}</CardTitle>
-                    {mineral.formula && (
-                      <CardDescription className="font-mono" data-testid={`text-mineral-formula-${mineral.id}`}>
-                        {mineral.formula}
-                      </CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      {mineral.crystalSystem && (
-                        <div>
-                          <span className="text-muted-foreground">Crystal System:</span>{' '}
-                          <span className="font-medium">{mineral.crystalSystem}</span>
-                        </div>
+            {minerals.map((mineral) => {
+              const formula = stripHtmlTags(mineral.mindat_formula || mineral.ima_formula || '');
+              const strunzCode = getStrunzCode(mineral);
+              
+              return (
+                <Link key={mineral.id} href={`/mineral/${mineral.id}`}>
+                  <Card className="hover-elevate cursor-pointer" data-testid={`card-mineral-${mineral.id}`}>
+                    <CardHeader>
+                      <CardTitle data-testid={`text-mineral-name-${mineral.id}`}>{mineral.name}</CardTitle>
+                      {formula && (
+                        <CardDescription className="font-mono" data-testid={`text-mineral-formula-${mineral.id}`}>
+                          Formula: {formula}
+                        </CardDescription>
                       )}
-                      {mineral.hardnessMin && mineral.hardnessMax && (
-                        <div>
-                          <span className="text-muted-foreground">Hardness:</span>{' '}
-                          <span className="font-medium">{mineral.hardnessMin} - {mineral.hardnessMax}</span>
-                        </div>
-                      )}
-                      {mineral.colour && (
-                        <div className="col-span-2">
-                          <span className="text-muted-foreground">Colour:</span>{' '}
-                          <span className="font-medium">{mineral.colour}</span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-sm">
+                        {strunzCode && (
+                          <div data-testid={`text-mineral-strunz-${mineral.id}`}>
+                            <span className="text-muted-foreground">Strunz Classification:</span>{' '}
+                            <span className="font-medium font-mono">{strunzCode}</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
