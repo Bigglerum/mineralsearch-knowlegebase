@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Header from "@/components/Header";
 import WheelMenu from "@/components/WheelMenu";
 import MineralSearchPage from "@/pages/mineral-search";
+import GroupsSeriesSearchPage from "@/pages/groups-series-search";
 import LocalitySearchPage from "@/pages/locality-search";
 import StrunzPage from "@/pages/strunz";
 import SettingsPage from "@/pages/settings";
@@ -21,6 +22,7 @@ function Router() {
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/search" component={MineralSearchPage} />
+      <Route path="/groups-series" component={GroupsSeriesSearchPage} />
       <Route path="/locality" component={LocalitySearchPage} />
       <Route path="/strunz" component={StrunzPage} />
       <Route path="/settings" component={SettingsPage} />

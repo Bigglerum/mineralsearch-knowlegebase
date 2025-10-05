@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Grid3x3, MapPin, Settings, Moon, Sun } from 'lucide-react';
+import { Search, Grid3x3, MapPin, Settings, Moon, Sun, Layers } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 interface WheelMenuItem {
@@ -11,6 +11,7 @@ interface WheelMenuItem {
 
 const menuItems: WheelMenuItem[] = [
   { id: 'search', icon: Search, label: 'Mineral Search', route: '/search' },
+  { id: 'groups-series', icon: Layers, label: 'Groups & Series', route: '/groups-series' },
   { id: 'strunz', icon: Grid3x3, label: 'Strunz', route: '/strunz' },
   { id: 'locality', icon: MapPin, label: 'Locality', route: '/locality' },
   { id: 'settings', icon: Settings, label: 'Settings', route: '/settings' },

@@ -30,8 +30,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: searchName,
         page: parseInt(page as string),
         page_size: parseInt(page_size as string),
-        fields: 'id,name,mindat_formula,ima_formula,strunz10ed1,strunz10ed2,strunz10ed3,strunz10ed4',
-        entrytype: 0
+        fields: 'id,name,mindat_formula,ima_formula,strunz10ed1,strunz10ed2,strunz10ed3,strunz10ed4,ima_status,varietyof,synid,entrytype_text'
       });
 
       return res.json({ 
@@ -41,6 +40,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error searching minerals:', error);
       return res.status(500).json({ error: 'Failed to search minerals' });
+    }
+  });
+
+  // Groups/Series Search Routes (Live Mindat API)
+  app.get('/api/groups-series/search', async (req: Request, res: Response) => {
+    try {
+      const { 
+        q, 
+        name, 
+        page = '1',
+        page_size = '20'
+      } = req.query;
+
+      const searchName = (name || q) as string;
+      
+      if (!searchName) {
+        return res.json({ 
+          results: [],
+          count: 0,
+        });
+      }
+
+      const response = await mindatAPI.searchMinerals({
+        name: searchName,
+        page: parseInt(page as string),
+        page_size: parseInt(page_size as string),
+        fields: 'id,name,mindat_formula,ima_formula,strunz10ed1,strunz10ed2,strunz10ed3,strunz10ed4,entrytype_text'
+      });
+
+      const groupsAndSeries = (response.results || []).filter((m: any) => {
+        const entryType = m.entrytype_text?.toLowerCase() || '';
+        return entryType.includes('group') || entryType.includes('series') || entryType.includes('supergroup');
+      });
+
+      return res.json({ 
+        results: groupsAndSeries,
+        count: groupsAndSeries.length,
+      });
+    } catch (error) {
+      console.error('Error searching groups/series:', error);
+      return res.status(500).json({ error: 'Failed to search groups/series' });
     }
   });
 

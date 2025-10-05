@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Plus, Minus } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -10,7 +10,6 @@ export default function MineralSearchPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSearch, setActiveSearch] = useState('');
   const [exactMatchMode, setExactMatchMode] = useState(true);
-  const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set());
 
   const { data, isLoading, error } = useQuery({
     queryKey: [`/api/minerals/search?q=${encodeURIComponent(activeSearch)}`],
@@ -24,10 +23,15 @@ export default function MineralSearchPage() {
 
   const rawMinerals = (data as { results: any[] })?.results || [];
   
-  let filteredMinerals = rawMinerals;
+  const mineralsWithoutGroups = rawMinerals.filter((m: any) => {
+    const entryType = m.entrytype_text?.toLowerCase() || '';
+    return !entryType.includes('group') && !entryType.includes('series') && !entryType.includes('supergroup');
+  });
+  
+  let filteredMinerals = mineralsWithoutGroups;
   if (exactMatchMode && activeSearch) {
-    const exactMatch = rawMinerals.find(m => m.name?.toLowerCase() === activeSearch.toLowerCase());
-    filteredMinerals = exactMatch ? [exactMatch] : rawMinerals;
+    const exactMatch = mineralsWithoutGroups.find(m => m.name?.toLowerCase() === activeSearch.toLowerCase());
+    filteredMinerals = exactMatch ? [exactMatch] : mineralsWithoutGroups;
   }
   
   const minerals = filteredMinerals.sort((a, b) => {
@@ -38,21 +42,6 @@ export default function MineralSearchPage() {
     if (aExactMatch && !bExactMatch) return -1;
     if (!aExactMatch && bExactMatch) return 1;
     return 0;
-  });
-  
-  const toggleGroupExpansion = (mineralId: number) => {
-    const newExpanded = new Set(expandedGroups);
-    if (newExpanded.has(mineralId)) {
-      newExpanded.delete(mineralId);
-    } else {
-      newExpanded.add(mineralId);
-    }
-    setExpandedGroups(newExpanded);
-  };
-  
-  const { data: groupMembersData } = useQuery({
-    queryKey: expandedGroups.size > 0 ? [`/api/minerals/search?q=${encodeURIComponent(activeSearch)}&page_size=50`] : [],
-    enabled: expandedGroups.size > 0,
   });
 
   const convertToUTF8Formula = (html: string) => {
@@ -193,39 +182,12 @@ export default function MineralSearchPage() {
             {minerals.map((mineral) => {
               const formula = convertToUTF8Formula(mineral.mindat_formula || mineral.ima_formula || '');
               const strunzCode = getStrunzCode(mineral);
-              const isGroup = mineral.name?.toLowerCase().includes('group') || 
-                             mineral.name?.toLowerCase().includes('series');
-              const isExpanded = expandedGroups.has(mineral.id);
-              
-              const potentialGroupMembers = isGroup && groupMembersData 
-                ? (groupMembersData as { results: any[] }).results.filter((m: any) => 
-                    m.id !== mineral.id && 
-                    m.name?.toLowerCase().includes(mineral.name?.toLowerCase().replace(/\s+(group|series)$/i, ''))
-                  )
-                : [];
-              
-              const groupMembers = isExpanded ? potentialGroupMembers : [];
-              const hasMembers = potentialGroupMembers.length > 0;
               
               return (
                 <div key={mineral.id}>
                   <Card data-testid={`card-mineral-${mineral.id}`}>
                     <CardHeader>
                       <div className="flex items-start gap-2">
-                        {isGroup && hasMembers && (
-                          <button
-                            onClick={() => toggleGroupExpansion(mineral.id)}
-                            className="flex-shrink-0 w-6 h-6 rounded-full bg-[#EE2C25] flex items-center justify-center text-white hover:bg-[#cc0000] transition-colors mt-1"
-                            data-testid={`button-expand-${mineral.id}`}
-                            aria-label={isExpanded ? 'Collapse' : 'Expand'}
-                          >
-                            {isExpanded ? (
-                              <Minus size={14} strokeWidth={3} />
-                            ) : (
-                              <Plus size={14} strokeWidth={3} />
-                            )}
-                          </button>
-                        )}
                         <div className="flex-1">
                           <CardTitle data-testid={`text-mineral-name-${mineral.id}`}>{mineral.name}</CardTitle>
                           {formula && (
@@ -237,48 +199,37 @@ export default function MineralSearchPage() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-sm">
-                        {strunzCode && (
-                          <div data-testid={`text-mineral-strunz-${mineral.id}`}>
-                            <span className="text-muted-foreground">Strunz:</span>{' '}
-                            <span className="font-medium">{strunzCode}</span>
-                          </div>
-                        )}
+                      <div className="flex justify-between items-start text-sm">
+                        <div>
+                          {strunzCode && (
+                            <div data-testid={`text-mineral-strunz-${mineral.id}`}>
+                              <span className="text-muted-foreground">Strunz:</span>{' '}
+                              <span className="font-medium">{strunzCode}</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          {mineral.varietyof > 0 ? (
+                            <div className="text-xs text-muted-foreground" data-testid={`text-mineral-variety-${mineral.id}`}>
+                              Variety
+                            </div>
+                          ) : mineral.synid > 0 ? (
+                            <div className="text-xs text-muted-foreground" data-testid={`text-mineral-synonym-${mineral.id}`}>
+                              Synonym
+                            </div>
+                          ) : mineral.ima_status && mineral.ima_status.length === 0 && mineral.entrytype_text?.toLowerCase().includes('discredited') ? (
+                            <div className="text-xs text-muted-foreground" data-testid={`text-mineral-discredited-${mineral.id}`}>
+                              Discredited
+                            </div>
+                          ) : mineral.ima_status && mineral.ima_status.length > 0 ? (
+                            <div className="text-xs text-muted-foreground" data-testid={`text-mineral-ima-status-${mineral.id}`}>
+                              {mineral.ima_status.join(', ')}
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
-                  
-                  {isExpanded && groupMembers.length > 0 && (
-                    <div className="ml-10 mt-2 space-y-2" data-testid={`group-members-${mineral.id}`}>
-                      {groupMembers.map((member: any) => {
-                        const memberFormula = convertToUTF8Formula(member.mindat_formula || member.ima_formula || '');
-                        const memberStrunz = getStrunzCode(member);
-                        
-                        return (
-                          <Card key={member.id} className="bg-muted/30" data-testid={`card-mineral-${member.id}`}>
-                            <CardHeader className="py-3">
-                              <CardTitle className="text-base" data-testid={`text-mineral-name-${member.id}`}>
-                                {member.name}
-                              </CardTitle>
-                              {memberFormula && (
-                                <CardDescription className="text-sm" data-testid={`text-mineral-formula-${member.id}`}>
-                                  {memberFormula}
-                                </CardDescription>
-                              )}
-                            </CardHeader>
-                            {memberStrunz && (
-                              <CardContent className="py-2">
-                                <div className="text-xs" data-testid={`text-mineral-strunz-${member.id}`}>
-                                  <span className="text-muted-foreground">Strunz:</span>{' '}
-                                  <span className="font-medium">{memberStrunz}</span>
-                                </div>
-                              </CardContent>
-                            )}
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  )}
                 </div>
               );
             })}
