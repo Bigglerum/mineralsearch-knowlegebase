@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -30,8 +30,13 @@ export default function MineralSearchPage() {
   
   let filteredMinerals = mineralsWithoutGroups;
   if (exactMatchMode && activeSearch) {
-    const exactMatch = mineralsWithoutGroups.find(m => m.name?.toLowerCase() === activeSearch.toLowerCase());
-    filteredMinerals = exactMatch ? [exactMatch] : mineralsWithoutGroups;
+    const exactMatch = mineralsWithoutGroups.find(m => {
+      const nameMatches = m.name?.toLowerCase() === activeSearch.toLowerCase();
+      const isApprovedOrGrandfathered = m.ima_status && m.ima_status.length > 0 && 
+        (m.ima_status.includes('APPROVED') || m.ima_status.includes('GRANDFATHERED'));
+      return nameMatches && isApprovedOrGrandfathered;
+    });
+    filteredMinerals = exactMatch ? [exactMatch] : [];
   }
   
   const minerals = filteredMinerals.sort((a, b) => {
@@ -43,6 +48,40 @@ export default function MineralSearchPage() {
     if (!aExactMatch && bExactMatch) return 1;
     return 0;
   });
+
+  const relatedMineralIds = useMemo(() => {
+    const ids = new Set<number>();
+    minerals.forEach(m => {
+      if (m.varietyof && m.varietyof > 0) ids.add(m.varietyof);
+      if (m.synid && m.synid > 0) ids.add(m.synid);
+    });
+    return Array.from(ids);
+  }, [minerals]);
+
+  const { data: relatedMineralsData } = useQuery({
+    queryKey: ['/api/minerals/batch', relatedMineralIds],
+    enabled: relatedMineralIds.length > 0,
+    queryFn: async () => {
+      const results = await Promise.all(
+        relatedMineralIds.map(id => 
+          fetch(`/api/minerals/${id}`).then(res => res.ok ? res.json() : null)
+        )
+      );
+      return results.filter(Boolean);
+    }
+  });
+
+  const relatedMineralsMap = useMemo(() => {
+    const map = new Map<number, string>();
+    if (relatedMineralsData) {
+      relatedMineralsData.forEach((m: any) => {
+        if (m && m.id && m.name) {
+          map.set(m.id, m.name);
+        }
+      });
+    }
+    return map;
+  }, [relatedMineralsData]);
 
   const convertToUTF8Formula = (html: string) => {
     if (!html) return '';
@@ -211,11 +250,15 @@ export default function MineralSearchPage() {
                         <div className="text-right">
                           {mineral.varietyof > 0 ? (
                             <div className="text-xs text-muted-foreground" data-testid={`text-mineral-variety-${mineral.id}`}>
-                              Variety
+                              {relatedMineralsMap.get(mineral.varietyof) 
+                                ? `Variety of ${relatedMineralsMap.get(mineral.varietyof)}`
+                                : 'Variety'}
                             </div>
                           ) : mineral.synid > 0 ? (
                             <div className="text-xs text-muted-foreground" data-testid={`text-mineral-synonym-${mineral.id}`}>
-                              Synonym
+                              {relatedMineralsMap.get(mineral.synid)
+                                ? `Synonym of ${relatedMineralsMap.get(mineral.synid)}`
+                                : 'Synonym'}
                             </div>
                           ) : mineral.ima_status && mineral.ima_status.length === 0 && mineral.entrytype_text?.toLowerCase().includes('discredited') ? (
                             <div className="text-xs text-muted-foreground" data-testid={`text-mineral-discredited-${mineral.id}`}>
