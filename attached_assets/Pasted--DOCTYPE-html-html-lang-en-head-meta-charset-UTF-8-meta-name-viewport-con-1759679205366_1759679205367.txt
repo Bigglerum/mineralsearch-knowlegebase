@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Rocks Toggle Switch & Slider</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* E-Rocks Toggle Switch Asset */
+        .erocks-toggle {
+            appearance: none;
+            width: 80px;
+            height: 36px;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f5f5f5, #ffffff);
+            outline: none;
+        }
+
+        .erocks-toggle::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 16px;
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 2px 6px rgba(255, 68, 68, 0.3);
+            transform: translate(-50%, -50%) rotate(0deg);
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext fill='%23EE2C25' font-family='Arial' font-size='358.4' text-anchor='middle' x='256' y='332.8'%3Ee%3C/text%3E%3C/svg%3E");
+            background-size: 28px 28px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .erocks-toggle::after {
+            content: "OFF";
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            transform: translateY(-50%);
+            font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 9px;
+            font-weight: 600;
+            color: #999;
+            letter-spacing: 0.8px;
+            transition: opacity 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .erocks-toggle:checked {
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            border-color: #cc0000;
+            box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.1);
+        }
+
+        .erocks-toggle:checked::before {
+            left: 64px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext fill='%23EE2C25' font-family='Arial' font-size='358.4' text-anchor='middle' x='256' y='332.8'%3Ee%3C/text%3E%3C/svg%3E");
+            transform: translate(-50%, -50%) rotate(360deg);
+        }
+
+        .erocks-toggle:checked::after {
+            content: "ON";
+            left: 10px;
+            right: auto;
+            color: white;
+        }
+
+        .erocks-toggle:hover {
+            border-color: #ff4444;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 68, 68, 0.2);
+        }
+
+        .erocks-toggle:focus {
+            box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.3);
+        }
+
+        .erocks-toggle:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .erocks-toggle:disabled:hover {
+            border-color: #e0e0e0;
+            box-shadow: none;
+        }
+
+        /* Inverted style for Premium toggle */
+        .erocks-toggle-inverted::before {
+            background: #ff4444;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext fill='white' font-family='Arial' font-size='358.4' text-anchor='middle' x='256' y='332.8'%3Ee%3C/text%3E%3C/svg%3E");
+            background-size: 28px 28px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .erocks-toggle-inverted:checked {
+            background: white;
+            border-color: #ff4444;
+            box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.1);
+        }
+
+        .erocks-toggle-inverted:checked::before {
+            background: #ff4444;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext fill='white' font-family='Arial' font-size='358.4' text-anchor='middle' x='256' y='332.8'%3Ee%3C/text%3E%3C/svg%3E");
+            box-shadow: 0 2px 6px rgba(255, 68, 68, 0.3);
+        }
+
+        .erocks-toggle-inverted:checked::after {
+            color: #999;
+        }
+
+        /* E-Rocks Slider Asset */
+        .erocks-slider-container {
+            position: relative;
+            width: 200px;
+            height: 36px;
+            margin: 20px 0;
+        }
+
+        .erocks-slider {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 3;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .erocks-slider-track {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #f5f5f5, #ffffff);
+            pointer-events: none;
+        }
+
+        .erocks-slider-button {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: none;
+        }
+
+        .erocks-slider-button.jumping {
+            transition: left 0.2s ease-out;
+        }
+
+        .erocks-slider-button img {
+            width: 28px;
+            height: 28px;
+            transition: none;
+        }
+
+        .erocks-slider-button.snapping img {
+            transition: transform 0.25s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .erocks-slider-container.active .erocks-slider-track {
+            border-color: #ff4444;
+            box-shadow: 0 0 0 3px rgba(255, 68, 68, 0.3);
+            transition: all 0.1s ease;
+        }
+
+        .erocks-slider-container:not(.active) .erocks-slider-track {
+            transition: all 0.3s ease 0.3s;
+        }
+
+        /* Step indicators */
+        .erocks-slider-steps {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            padding: 0 16px;
+            pointer-events: none;
+        }
+
+        .erocks-slider-step {
+            width: 2px;
+            height: 8px;
+            background: #ddd;
+            border-radius: 1px;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .erocks-slider-step:hover {
+            background: #ff4444;
+            height: 12px;
+        }
+
+        /* Demo styling - remove for production */
+        body {
+            font-family: 'Montserrat', sans-serif;
+            padding: 40px;
+            background: #f8f9fa;
+        }
+
+        .demo {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            max-width: 400px;
+        }
+
+        .demo h3 {
+            margin: 0 0 20px 0;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .toggle-example {
+            margin: 20px 0;
+        }
+
+        .toggle-example label {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 500;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .slider-example {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Demo - remove this section for production -->
+    <div class="demo">
+        <h3>E-Rocks Toggle Switch</h3>
+
+        <div class="toggle-example">
+            <label>
+                <input type="checkbox" class="erocks-toggle">
+                Feature Toggle
+            </label>
+        </div>
+        
+        <div class="toggle-example">
+            <label>
+                <input type="checkbox" class="erocks-toggle erocks-toggle-inverted" checked>
+                Premium Mode
+            </label>
+        </div>
+        
+        <div class="toggle-example">
+            <label>
+                <input type="checkbox" class="erocks-toggle" disabled>
+                Disabled State
+            </label>
+        </div>
+
+        <h3 style="margin-top: 30px;">E-Rocks Slider</h3>
+        
+        <div class="slider-example">
+            <div class="erocks-slider-container">
+                <input type="range" class="erocks-slider" min="0" max="4" step="0.01" value="0">
+                <div class="erocks-slider-track"></div>
+                <div class="erocks-slider-button">
+                    <img src="data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext fill='%23EE2C25' font-family='Arial' font-size='358.4' text-anchor='middle' x='256' y='332.8'%3Ee%3C/text%3E%3C/svg%3E" alt="">
+                </div>
+                <div class="erocks-slider-steps">
+                    <span class="erocks-slider-step" data-value="0"></span>
+                    <span class="erocks-slider-step" data-value="1"></span>
+                    <span class="erocks-slider-step" data-value="2"></span>
+                    <span class="erocks-slider-step" data-value="3"></span>
+                    <span class="erocks-slider-step" data-value="4"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Handle slider
+        const slider = document.querySelector('.erocks-slider');
+        const sliderContainer = document.querySelector('.erocks-slider-container');
+        const sliderButton = document.querySelector('.erocks-slider-button');
+        const sliderImg = sliderButton.querySelector('img');
+        const sliderSteps = document.querySelectorAll('.erocks-slider-step');
+        let snapTimeout;
+        let isJumping = false;
+        let isDragging = false;
+
+        function updateSliderPosition(jumping = false) {
+            const value = parseFloat(slider.value);
+            const percentage = value / 4;
+            const maxTravel = 200 - 36;
+            const leftPosition = 2 + (percentage * maxTravel);
+            
+            // Handle jumping animation
+            if (jumping && !isDragging) {
+                sliderButton.classList.add('jumping');
+                isJumping = true;
+                setTimeout(() => {
+                    sliderButton.classList.remove('jumping');
+                    isJumping = false;
+                }, 200);
+            }
+            
+            // Update button position
+            sliderButton.style.left = leftPosition + 'px';
+            
+            // Update rotation
+            const rotation = value * 360;
+            sliderImg.style.transform = `rotate(${rotation}deg)`;
+            
+            // Handle snap-to-upright effect
+            clearTimeout(snapTimeout);
+            sliderButton.classList.remove('snapping');
+            
+            if (!isDragging) {
+                snapTimeout = setTimeout(() => {
+                    const nearestStep = Math.round(value);
+                    const snapRotation = nearestStep * 360;
+                    sliderButton.classList.add('snapping');
+                    sliderImg.style.transform = `rotate(${snapRotation}deg)`;
+                }, 250);
+            }
+        }
+
+        function handleActiveStart() {
+            isDragging = true;
+            sliderContainer.classList.add('active');
+            sliderButton.classList.remove('jumping');
+        }
+
+        function handleActiveEnd() {
+            isDragging = false;
+            sliderContainer.classList.remove('active');
+            // Ensure snap happens after drag ends
+            updateSliderPosition(false);
+        }
+
+        // Main slider event listeners
+        slider.addEventListener('input', () => {
+            if (isDragging) {
+                updateSliderPosition(false);
+            }
+        });
+
+        // Mouse events
+        slider.addEventListener('mousedown', handleActiveStart);
+        slider.addEventListener('mouseup', handleActiveEnd);
+        
+        // Handle mouse leave during drag
+        slider.addEventListener('mouseleave', (e) => {
+            if (isDragging) {
+                handleActiveEnd();
+            }
+        });
+        
+        // Touch events
+        slider.addEventListener('touchstart', handleActiveStart, { passive: true });
+        slider.addEventListener('touchend', handleActiveEnd, { passive: true });
+        slider.addEventListener('touchcancel', handleActiveEnd, { passive: true });
+        
+        // Click on step indicators to jump
+        sliderSteps.forEach(step => {
+            step.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (isDragging) return;
+                
+                const targetValue = parseFloat(step.dataset.value);
+                slider.value = targetValue;
+                updateSliderPosition(true);
+                
+                // Flash active state
+                handleActiveStart();
+                setTimeout(() => {
+                    isDragging = false;
+                    sliderContainer.classList.remove('active');
+                }, 100);
+            });
+        });
+
+        // Click on track to jump
+        sliderContainer.addEventListener('click', (e) => {
+            // Ignore clicks on slider itself, during jumps, or during drags
+            if (e.target === slider || isJumping || isDragging) return;
+            
+            const rect = sliderContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const percentage = Math.max(0, Math.min(1, (x - 18) / (200 - 36)));
+            const newValue = percentage * 4;
+            
+            slider.value = newValue;
+            updateSliderPosition(true);
+            
+            // Flash active state
+            handleActiveStart();
+            setTimeout(() => {
+                isDragging = false;
+                sliderContainer.classList.remove('active');
+            }, 100);
+        });
+        
+        // Initialize
+        updateSliderPosition(false);
+    </script>
+
+    <!-- Usage Instructions (comment out for production) -->
+    <!--
+    USAGE:
+    1. Include Montserrat font: <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    2. Copy the CSS above
+    3. Use this HTML: <input type="checkbox" class="erocks-toggle">
+    4. For slider: wrap in erocks-slider-container div as shown above
+
+    BRAND COLORS EXTRACTED:
+    - Primary red: #ff4444
+    - Logo red: #EE2C25
+    -->
+</body>
+</html>
