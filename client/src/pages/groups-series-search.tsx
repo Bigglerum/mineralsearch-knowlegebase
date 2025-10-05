@@ -19,7 +19,7 @@ export default function GroupsSeriesSearchPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setActiveSearch(searchQuery);
+    setActiveSearch(searchQuery.trim());
   };
 
   const results = (data as { results: any[] })?.results || [];

@@ -18,7 +18,7 @@ export default function MineralSearchPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setActiveSearch(searchQuery);
+    setActiveSearch(searchQuery.trim());
   };
 
   const rawMinerals = (data as { results: any[] })?.results || [];
@@ -220,7 +220,7 @@ export default function MineralSearchPage() {
             <CardContent className="pt-6 text-center">
               {exactMatchMode && hasNonIMAMatch ? (
                 <p className="text-muted-foreground">
-                  "{activeSearch}" is not an IMA approved mineral type, try removing the IMA search for wide search.
+                  "{activeSearch}" is not an IMA approved mineral type, try removing the IMA search for all results.
                 </p>
               ) : (
                 <p className="text-muted-foreground">No minerals found matching "{activeSearch}"</p>
