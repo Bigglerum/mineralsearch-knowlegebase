@@ -23,9 +23,31 @@ export default function MineralSearchPage() {
 
   const minerals = (data as { results: any[] })?.results || [];
 
-  const stripHtmlTags = (html: string) => {
+  const convertToUTF8Formula = (html: string) => {
     if (!html) return '';
-    return html.replace(/<sub>/g, '').replace(/<\/sub>/g, '').replace(/<sup>/g, '').replace(/<\/sup>/g, '');
+    
+    const subscriptMap: { [key: string]: string } = {
+      '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄',
+      '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉'
+    };
+    
+    const superscriptMap: { [key: string]: string } = {
+      '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+      '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+      '+': '⁺', '-': '⁻'
+    };
+    
+    let result = html;
+    
+    result = result.replace(/<sub>(.*?)<\/sub>/g, (match, content) => {
+      return content.split('').map((char: string) => subscriptMap[char] || char).join('');
+    });
+    
+    result = result.replace(/<sup>(.*?)<\/sup>/g, (match, content) => {
+      return content.split('').map((char: string) => superscriptMap[char] || char).join('');
+    });
+    
+    return result;
   };
 
   const getStrunzCode = (mineral: any) => {
@@ -93,7 +115,7 @@ export default function MineralSearchPage() {
         {!isLoading && minerals.length > 0 && (
           <div className="grid gap-4" data-testid="list-minerals">
             {minerals.map((mineral) => {
-              const formula = stripHtmlTags(mineral.mindat_formula || mineral.ima_formula || '');
+              const formula = convertToUTF8Formula(mineral.mindat_formula || mineral.ima_formula || '');
               const strunzCode = getStrunzCode(mineral);
               
               return (
@@ -102,8 +124,8 @@ export default function MineralSearchPage() {
                     <CardHeader>
                       <CardTitle data-testid={`text-mineral-name-${mineral.id}`}>{mineral.name}</CardTitle>
                       {formula && (
-                        <CardDescription className="font-mono" data-testid={`text-mineral-formula-${mineral.id}`}>
-                          Formula: {formula}
+                        <CardDescription data-testid={`text-mineral-formula-${mineral.id}`}>
+                          {formula}
                         </CardDescription>
                       )}
                     </CardHeader>
@@ -111,8 +133,8 @@ export default function MineralSearchPage() {
                       <div className="text-sm">
                         {strunzCode && (
                           <div data-testid={`text-mineral-strunz-${mineral.id}`}>
-                            <span className="text-muted-foreground">Strunz Classification:</span>{' '}
-                            <span className="font-medium font-mono">{strunzCode}</span>
+                            <span className="text-muted-foreground">Strunz:</span>{' '}
+                            <span className="font-medium">{strunzCode}</span>
                           </div>
                         )}
                       </div>
