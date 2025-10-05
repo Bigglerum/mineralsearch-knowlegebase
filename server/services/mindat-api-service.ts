@@ -13,6 +13,7 @@ interface MindatSearchParams {
   ima_formula?: string;
   crystal_system?: string;
   ordering?: string;
+  entrytype?: number;
 }
 
 export class MindatAPIService {
@@ -56,16 +57,21 @@ export class MindatAPIService {
     const queryParams = new URLSearchParams();
     
     queryParams.append('format', 'json');
+    
+    const defaultFields = 'id,name,mindat_formula,ima_formula,strunz10ed1,strunz10ed2,strunz10ed3,strunz10ed4';
+    queryParams.append('fields', params.fields || defaultFields);
+    
     if (params.page) queryParams.append('page', params.page.toString());
     if (params.page_size) queryParams.append('page_size', params.page_size.toString());
-    if (params.fields) queryParams.append('fields', params.fields);
     if (params.name) queryParams.append('q', params.name);
     if (params.elements) queryParams.append('elements_inc', params.elements);
     if (params.ima_formula) queryParams.append('ima_formula', params.ima_formula);
     if (params.crystal_system) queryParams.append('crystal_system', params.crystal_system);
     if (params.ordering) queryParams.append('ordering', params.ordering);
+    if (params.entrytype !== undefined) queryParams.append('entrytype', params.entrytype.toString());
 
     const url = `${this.baseUrl}/geomaterials/?${queryParams.toString()}`;
+    console.log('Mindat API URL:', url);
 
     try {
       const response = await fetch(url, {

@@ -30,7 +30,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: searchName,
         page: parseInt(page as string),
         page_size: parseInt(page_size as string),
-        fields: 'id,name,ima_formula,formula,crystal_system,hardness_min,hardness_max,colour'
+        fields: 'id,name,mindat_formula,ima_formula,strunz10ed1,strunz10ed2,strunz10ed3,strunz10ed4',
+        entrytype: 0
       });
 
       return res.json({ 
