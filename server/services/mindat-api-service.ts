@@ -55,16 +55,17 @@ export class MindatAPIService {
   async searchMinerals(params: MindatSearchParams = {}): Promise<any> {
     const queryParams = new URLSearchParams();
     
+    queryParams.append('format', 'json');
     if (params.page) queryParams.append('page', params.page.toString());
     if (params.page_size) queryParams.append('page_size', params.page_size.toString());
     if (params.fields) queryParams.append('fields', params.fields);
-    if (params.name) queryParams.append('name', params.name);
-    if (params.elements) queryParams.append('elements', params.elements);
+    if (params.name) queryParams.append('q', params.name);
+    if (params.elements) queryParams.append('elements_inc', params.elements);
     if (params.ima_formula) queryParams.append('ima_formula', params.ima_formula);
     if (params.crystal_system) queryParams.append('crystal_system', params.crystal_system);
     if (params.ordering) queryParams.append('ordering', params.ordering);
 
-    const url = `${this.baseUrl}/minerals/?${queryParams.toString()}`;
+    const url = `${this.baseUrl}/geomaterials/?${queryParams.toString()}`;
 
     try {
       const response = await fetch(url, {
@@ -83,7 +84,7 @@ export class MindatAPIService {
   }
 
   async getMineralById(id: number): Promise<any> {
-    const url = `${this.baseUrl}/minerals/${id}/`;
+    const url = `${this.baseUrl}/geomaterials/${id}/`;
 
     try {
       const response = await fetch(url, {
@@ -104,6 +105,7 @@ export class MindatAPIService {
   async searchLocalities(params: { name?: string; page?: number; page_size?: number } = {}): Promise<any> {
     const queryParams = new URLSearchParams();
     
+    queryParams.append('format', 'json');
     if (params.name) queryParams.append('name', params.name);
     if (params.page) queryParams.append('page', params.page.toString());
     if (params.page_size) queryParams.append('page_size', params.page_size.toString());

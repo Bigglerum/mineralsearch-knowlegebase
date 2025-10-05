@@ -7,34 +7,35 @@ const mindatAPI = MindatAPIService.getInstance();
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
-  // Mineral Search Routes
+  // Mineral Search Routes (Live Mindat API)
   app.get('/api/minerals/search', async (req: Request, res: Response) => {
     try {
       const { 
         q, 
         name, 
-        formula, 
-        elements, 
-        crystalSystem,
-        limit = '20', 
-        offset = '0' 
+        page = '1',
+        page_size = '20'
       } = req.query;
 
-      // Parse elements if provided
-      const elementArray = elements ? (elements as string).split(',').map(e => e.trim()) : undefined;
+      const searchName = (name || q) as string;
+      
+      if (!searchName) {
+        return res.json({ 
+          results: [],
+          count: 0,
+        });
+      }
 
-      const results = await storage.searchMinerals({
-        name: (name || q) as string,
-        formula: formula as string,
-        elements: elementArray,
-        crystalSystem: crystalSystem as string,
-        limit: parseInt(limit as string),
-        offset: parseInt(offset as string),
+      const response = await mindatAPI.searchMinerals({
+        name: searchName,
+        page: parseInt(page as string),
+        page_size: parseInt(page_size as string),
+        fields: 'id,name,ima_formula,formula,crystal_system,hardness_min,hardness_max,colour'
       });
 
       return res.json({ 
-        results,
-        count: results.length,
+        results: response.results || [],
+        count: response.count || 0,
       });
     } catch (error) {
       console.error('Error searching minerals:', error);
@@ -42,11 +43,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get single mineral by ID
+  // Get single mineral by ID (Live Mindat API)
   app.get('/api/minerals/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const mineral = await storage.getMineralById(parseInt(id));
+      const mineral = await mindatAPI.getMineralById(parseInt(id));
 
       if (!mineral) {
         return res.status(404).json({ error: 'Mineral not found' });
