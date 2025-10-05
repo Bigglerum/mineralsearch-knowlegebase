@@ -1,0 +1,595 @@
+# Mindat API Integration Guide
+
+## Complete Guide to Connecting and Interrogating the Mindat API
+
+This document explains how this application successfully connects to and interrogates the Mindat API. Use this as a blueprint for building your own Mindat-powered applications.
+
+---
+
+## Architecture Overview
+
+The application uses a **three-tier architecture** to connect to the Mindat API:
+
+1. **Frontend Service Layer** (`client/src/lib/mindat-service.ts`) - Provides typed API functions for React components
+2. **Backend Proxy Layer** (`server/services/secure-api-proxy.ts`) - Secure proxy with caching and rate limiting
+3. **Backend API Routes** (`server/routes.ts`) - Express routes that validate and forward requests
+
+---
+
+## 1. Authentication Setup
+
+### Environment Variables Required
+
+```bash
+MINDAT_API_KEY=your_api_key_here
+```
+
+### Authentication Method: Token-Based
+
+The Mindat API uses **Token authentication** (not Basic auth):
+
+```typescript
+// Authorization header format
+{
+  'Authorization': `Token ${MINDAT_API_KEY}`,
+  'Accept': 'application/json'
+}
+```
+
+**Critical Point**: The API key must NEVER be exposed to the frontend. It stays server-side only.
+
+---
+
+## 2. Secure Proxy Architecture
+
+### Why Use a Proxy?
+
+The proxy layer (`server/services/secure-api-proxy.ts`) provides:
+
+- **Security**: API keys never reach the browser
+- **Caching**: 5-minute response cache to reduce API calls
+- **Rate Limiting**: Prevents abuse and API quota exhaustion
+- **Path Sanitization**: Prevents malicious API calls
+- **Retry Logic**: Exponential backoff for failed requests
+
+### Proxy Implementation
+
+```typescript
+// Key security features:
+const ALLOWED_PATHS = /^\/(?:minerals|geomaterials|locations|localities|images|crystalclasses|spacegroups|nickel-strunz-10|dana-8)(?:\/|$)/;
+const MINDAT_BASE_URL = 'https://api.mindat.org/v1';
+
+// Only GET requests allowed
+method: z.enum(['GET'])
+
+// Request flow:
+1. Frontend sends request to `/api/proxy`
+2. Backend validates path and parameters
+3. Backend adds API key to headers
+4. Backend forwards to Mindat API
+5. Response cached and returned to frontend
+```
+
+### Path Mapping
+
+The Mindat API has **different endpoint names** than the documentation suggests:
+
+```typescript
+// Documentation says: /minerals
+// Actual endpoint:    /geomaterials
+
+// Documentation says: /locations  
+// Actual endpoint:    /localities
+
+// The proxy automatically maps these:
+if (path.startsWith('/minerals')) {
+  mappedPath = path.replace('/minerals', '/geomaterials');
+}
+```
+
+---
+
+## 3. Frontend Service Layer
+
+### Making Requests from the Frontend
+
+All frontend components use the service layer (`client/src/lib/mindat-service.ts`):
+
+```typescript
+// Example: Search for minerals
+import { searchMinerals } from '@/lib/mindat-service';
+
+const results = await searchMinerals({
+  name: 'quartz',
+  limit: 10,
+  offset: 0
+});
+```
+
+### Service Functions Call the Proxy
+
+```typescript
+export async function searchMinerals(params: MindatMineralSearchParams) {
+  // Convert parameters to API format
+  const queryParams = {
+    ...params,
+    limit: params.limit || 10,
+    offset: params.offset || 0
+  };
+
+  // Call the backend proxy (NOT the Mindat API directly)
+  const response = await apiRequest('POST', '/api/proxy', {
+    path: '/geomaterials/',  // Use actual API path
+    method: 'GET',
+    parameters: queryParams
+  });
+
+  return await response.json();
+}
+```
+
+---
+
+## 4. Critical API Endpoints and Parameters
+
+### Mineral Search (`/geomaterials/`)
+
+**Working Parameters**:
+- `q` - General search query (most reliable)
+- `name` - Exact mineral name search
+- `elements` - Comma-separated element symbols (e.g., "Si,O")
+- `dana8ed1`, `dana8ed2`, `dana8ed3`, `dana8ed4` - Dana classification components
+- `strunz10ed1`, `strunz10ed2`, etc. - Strunz classification
+- `crystal_system` - Crystal system filter
+- `cclass` - Crystal class number (1-32)
+- `limit` - Results per page (max 100)
+- `page` - Page number for pagination
+
+**Example Request**:
+```typescript
+{
+  path: '/geomaterials/',
+  method: 'GET',
+  parameters: {
+    q: 'quartz',
+    limit: 25
+  }
+}
+```
+
+### Locality Search (`/localities/`)
+
+**Working Parameters**:
+- `txt` - General text search (MOST RELIABLE for localities)
+- `name` - Locality name with exact matching
+- `limit`, `offset` - Pagination
+
+**Critical Discovery**: The `txt` parameter works better than `name` for locality searches.
+
+```typescript
+{
+  path: '/localities/',
+  method: 'GET',
+  parameters: {
+    txt: 'Tsumeb',  // Use txt, not name
+    limit: 10
+  }
+}
+```
+
+### Getting Mineral Details
+
+```typescript
+{
+  path: '/geomaterials/{id}/',  // Use ID in path
+  method: 'GET',
+  parameters: {}
+}
+```
+
+### Getting Locality Details
+
+```typescript
+{
+  path: '/localities/{id}/',
+  method: 'GET',
+  parameters: {}
+}
+```
+
+---
+
+## 5. Search Implementation Examples
+
+### Example 1: Basic Mineral Search by Name
+
+```typescript
+// Frontend component code
+import { searchMineralSpecies } from '@/lib/mindat-service';
+
+const searchMinerals = async (searchTerm: string) => {
+  const results = await searchMineralSpecies(searchTerm);
+  // Results contain: count, next, previous, results[]
+};
+```
+
+### Example 2: Search by Dana Classification
+
+```typescript
+import { searchMineralsByDanaClass } from '@/lib/mindat-service';
+
+const results = await searchMineralsByDanaClass({
+  dana_class: '2.11.1.1',  // Full Dana code
+  limit: 20
+});
+
+// The API splits this into:
+// dana8ed1: '2'
+// dana8ed2: '11'
+// dana8ed3: '1'
+// dana8ed4: '1'
+```
+
+### Example 3: Search by Crystal System
+
+```typescript
+import { searchMineralsByCrystalSystem } from '@/lib/mindat-service';
+
+const results = await searchMineralsByCrystalSystem({
+  crystal_system: 'Cubic',
+  crystal_class_number: 23,  // Specific crystal class
+  limit: 50
+});
+```
+
+---
+
+## 6. Response Handling and Data Structure
+
+### Standard Response Format
+
+All Mindat API responses follow this structure:
+
+```json
+{
+  "count": 1234,
+  "next": "https://api.mindat.org/v1/geomaterials/?page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 3337,
+      "name": "Quartz",
+      "ima_formula": "SiO₂",
+      "mindat_formula": "SiO2",
+      "crystal_system": "Trigonal",
+      "...": "..."
+    }
+  ]
+}
+```
+
+### Handling Pagination
+
+```typescript
+let allResults = [];
+let nextUrl = null;
+
+do {
+  const response = await fetch(nextUrl || initialUrl);
+  const data = await response.json();
+  
+  allResults = [...allResults, ...data.results];
+  nextUrl = data.next;
+  
+} while (nextUrl);
+```
+
+---
+
+## 7. Caching Strategy
+
+The proxy implements a **5-minute cache** using `node-cache`:
+
+```typescript
+// server/services/secure-api-proxy.ts
+const responseCache = new NodeCache({ 
+  stdTTL: 300,      // 5 minutes
+  checkperiod: 60   // Check for expired keys every minute
+});
+
+// Cache key format:
+const cacheKey = `${method}:${path}:${JSON.stringify(parameters)}`;
+
+// Check cache before making request
+const cached = responseCache.get(cacheKey);
+if (cached) {
+  return { data: cached, status: 200, cached: true };
+}
+```
+
+**Benefits**:
+- Reduces API calls for repeated searches
+- Faster response times
+- Lower API quota usage
+- Can be cleared manually if needed
+
+---
+
+## 8. Error Handling
+
+### Proxy Error Handling
+
+```typescript
+// Timeout handling (8 seconds)
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+try {
+  const response = await fetch(url, { signal: controller.signal });
+  // Process response
+} catch (error) {
+  if (error.name === 'AbortError') {
+    throw new Error('Request timeout');
+  }
+  throw error;
+}
+```
+
+### Retry Logic with Exponential Backoff
+
+```typescript
+async makeRequestWithRetry(url, options, attempt = 1) {
+  try {
+    const response = await fetch(url, options);
+    
+    // Retry on 5xx errors
+    if (response.status >= 500 && attempt <= this.maxRetries) {
+      const delay = Math.pow(2, attempt) * 1000;  // 2s, 4s, 8s
+      await this.sleep(delay);
+      return this.makeRequestWithRetry(url, options, attempt + 1);
+    }
+    
+    return response;
+  } catch (error) {
+    // Retry on network errors
+    if (attempt <= this.maxRetries) {
+      const delay = Math.pow(2, attempt) * 1000;
+      await this.sleep(delay);
+      return this.makeRequestWithRetry(url, options, attempt + 1);
+    }
+    throw error;
+  }
+}
+```
+
+---
+
+## 9. Security Best Practices
+
+### 1. Never Expose API Keys
+
+```typescript
+// ❌ NEVER DO THIS - Exposes API key
+const response = await fetch('https://api.mindat.org/v1/geomaterials/', {
+  headers: { 'Authorization': `Token ${userApiKey}` }
+});
+
+// ✅ DO THIS - Use server-side proxy
+const response = await apiRequest('POST', '/api/proxy', {
+  path: '/geomaterials/',
+  method: 'GET',
+  parameters: { q: 'quartz' }
+});
+```
+
+### 2. Validate All Inputs
+
+```typescript
+// Zod schema validation on backend
+const ProxyRequestSchema = z.object({
+  path: z.string().regex(ALLOWED_PATHS, 'Invalid API path'),
+  method: z.enum(['GET']),
+  parameters: z.record(z.union([
+    z.string(), 
+    z.number(), 
+    z.boolean(), 
+    z.array(z.string())
+  ])).optional()
+});
+
+const validatedRequest = ProxyRequestSchema.parse(request);
+```
+
+### 3. Path Sanitization
+
+```typescript
+// Remove path traversal attempts
+const sanitizedPath = path
+  .replace(/\.\./g, '')   // Remove ../
+  .replace(/\/+/g, '/');  // Normalize slashes
+```
+
+### 4. Rate Limiting
+
+```typescript
+// Apply rate limits to proxy endpoint
+app.post('/api/proxy', apiProxyRateLimit, async (req, res) => {
+  // Process request
+});
+
+// Rate limit configuration
+const apiProxyRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,  // 15 minutes
+  max: 100,                   // 100 requests per window
+  message: 'Too many API requests'
+});
+```
+
+---
+
+## 10. Common Pitfalls and Solutions
+
+### Pitfall 1: Wrong Endpoint Names
+**Problem**: Documentation says `/minerals` but it doesn't work  
+**Solution**: Use `/geomaterials` (the proxy maps this automatically)
+
+### Pitfall 2: Locality Search Returns No Results
+**Problem**: Using `name` parameter for localities  
+**Solution**: Use `txt` parameter instead
+
+### Pitfall 3: API Key Not Working
+**Problem**: Using Basic auth format or wrong header  
+**Solution**: Use `Token ${API_KEY}` format, not `Bearer` or Basic
+
+### Pitfall 4: Search Parameters Don't Work
+**Problem**: Using wrong parameter names  
+**Solution**: Use `q` for general search, specific fields for filters
+
+### Pitfall 5: Dana/Strunz Classification Search Fails
+**Problem**: Trying to send full code as single parameter  
+**Solution**: Split into components (dana8ed1, dana8ed2, etc.)
+
+---
+
+## 11. Integration Checklist
+
+Use this checklist when building your own Mindat integration:
+
+- [ ] Set up environment variable for `MINDAT_API_KEY`
+- [ ] Create backend proxy service with:
+  - [ ] Path allowlist/validation
+  - [ ] Response caching (5 min TTL)
+  - [ ] Retry logic with exponential backoff
+  - [ ] Timeout handling (8 seconds)
+  - [ ] Rate limiting
+- [ ] Create frontend service layer with typed functions
+- [ ] Map documentation paths to actual API paths:
+  - [ ] `/minerals` → `/geomaterials`
+  - [ ] `/locations` → `/localities`
+- [ ] Implement proper authentication headers:
+  - [ ] Use `Token ${API_KEY}` format
+  - [ ] Keep API key server-side only
+- [ ] Handle pagination in responses
+- [ ] Implement error handling for:
+  - [ ] Network timeouts
+  - [ ] 5xx server errors
+  - [ ] Rate limit errors
+  - [ ] Invalid responses
+
+---
+
+## 12. Code Templates
+
+### Backend Proxy Route
+
+```typescript
+app.post('/api/proxy', apiProxyRateLimit, async (req, res) => {
+  try {
+    const { path, method, parameters } = req.body;
+    
+    if (!process.env.MINDAT_API_KEY) {
+      return res.status(401).json({ 
+        error: 'Server API key not configured' 
+      });
+    }
+    
+    const response = await secureApiProxy.proxyRequest(
+      { path, method, parameters },
+      process.env.MINDAT_API_KEY
+    );
+    
+    return res.status(response.status).json({
+      data: response.data,
+      cached: response.cached
+    });
+  } catch (error) {
+    console.error('Proxy error:', error);
+    return res.status(502).json({ 
+      error: 'External API unavailable' 
+    });
+  }
+});
+```
+
+### Frontend Search Function
+
+```typescript
+export async function searchMinerals(searchTerm: string) {
+  const response = await apiRequest('POST', '/api/proxy', {
+    path: '/geomaterials/',
+    method: 'GET',
+    parameters: { 
+      q: searchTerm,
+      limit: 25 
+    }
+  });
+  
+  const data = await response.json();
+  
+  return {
+    count: data?.data?.count || 0,
+    results: data?.data?.results || []
+  };
+}
+```
+
+### React Component Usage
+
+```typescript
+import { useQuery } from '@tanstack/react-query';
+import { searchMinerals } from '@/lib/mindat-service';
+
+function MineralSearch() {
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const { data, isLoading } = useQuery({
+    queryKey: ['/api/minerals/search', searchTerm],
+    queryFn: () => searchMinerals(searchTerm),
+    enabled: searchTerm.length > 0
+  });
+  
+  return (
+    <div>
+      <input 
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        placeholder="Search minerals..."
+      />
+      
+      {isLoading && <div>Loading...</div>}
+      
+      {data?.results?.map(mineral => (
+        <div key={mineral.id}>
+          {mineral.name} - {mineral.ima_formula}
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+---
+
+## 13. Summary
+
+### Key Success Factors
+
+1. **Server-Side Proxy**: Never expose API keys to frontend
+2. **Correct Endpoints**: Use `/geomaterials` and `/localities`
+3. **Token Auth**: Use `Token ${API_KEY}` header format
+4. **Parameter Names**: Use `q` for search, `txt` for localities
+5. **Caching**: Implement 5-minute cache to reduce API calls
+6. **Error Handling**: Retry with exponential backoff
+7. **Rate Limiting**: Protect your API quota
+8. **Path Sanitization**: Validate and sanitize all paths
+
+### This Architecture Works Because:
+
+✅ API keys are secure (server-side only)  
+✅ Responses are cached (faster, fewer API calls)  
+✅ Errors are handled gracefully (retry logic)  
+✅ Paths are validated (security)  
+✅ Rate limits prevent abuse  
+✅ Frontend has clean, typed API  
+
+Use this guide to build reliable, secure Mindat API integrations in any application!

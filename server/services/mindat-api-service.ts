@@ -17,7 +17,7 @@ interface MindatSearchParams {
 
 export class MindatAPIService {
   private static instance: MindatAPIService;
-  private baseUrl = 'https://api.mindat.org';
+  private baseUrl = 'https://api.mindat.org/v1';
   private authConfig: MindatAuthConfig;
 
   private constructor() {
@@ -106,7 +106,7 @@ export class MindatAPIService {
     const queryParams = new URLSearchParams();
     
     queryParams.append('format', 'json');
-    if (params.name) queryParams.append('name', params.name);
+    if (params.name) queryParams.append('txt', params.name);
     if (params.page) queryParams.append('page', params.page.toString());
     if (params.page_size) queryParams.append('page_size', params.page_size.toString());
 
