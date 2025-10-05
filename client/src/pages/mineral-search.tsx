@@ -29,6 +29,8 @@ export default function MineralSearchPage() {
   });
   
   let filteredMinerals = mineralsWithoutGroups;
+  let hasNonIMAMatch = false;
+  
   if (exactMatchMode && activeSearch) {
     const exactMatch = mineralsWithoutGroups.find(m => {
       const nameMatches = m.name?.toLowerCase() === activeSearch.toLowerCase();
@@ -36,6 +38,11 @@ export default function MineralSearchPage() {
         (m.ima_status.includes('APPROVED') || m.ima_status.includes('GRANDFATHERED'));
       return nameMatches && isApprovedOrGrandfathered;
     });
+    
+    hasNonIMAMatch = mineralsWithoutGroups.some(m => 
+      m.name?.toLowerCase() === activeSearch.toLowerCase()
+    );
+    
     filteredMinerals = exactMatch ? [exactMatch] : [];
   }
   
@@ -211,7 +218,7 @@ export default function MineralSearchPage() {
         {!isLoading && !error && activeSearch && minerals.length === 0 && (
           <Card data-testid="card-no-results">
             <CardContent className="pt-6 text-center">
-              {exactMatchMode ? (
+              {exactMatchMode && hasNonIMAMatch ? (
                 <p className="text-muted-foreground">
                   "{activeSearch}" is not an IMA approved mineral type, try removing the IMA search for wide search.
                 </p>
