@@ -21,7 +21,17 @@ export default function MineralSearchPage() {
     setActiveSearch(searchQuery);
   };
 
-  const minerals = (data as { results: any[] })?.results || [];
+  const rawMinerals = (data as { results: any[] })?.results || [];
+  
+  const minerals = rawMinerals.sort((a, b) => {
+    const searchLower = activeSearch.toLowerCase();
+    const aExactMatch = a.name?.toLowerCase() === searchLower;
+    const bExactMatch = b.name?.toLowerCase() === searchLower;
+    
+    if (aExactMatch && !bExactMatch) return -1;
+    if (!aExactMatch && bExactMatch) return 1;
+    return 0;
+  });
 
   const convertToUTF8Formula = (html: string) => {
     if (!html) return '';
@@ -134,28 +144,26 @@ export default function MineralSearchPage() {
               const strunzCode = getStrunzCode(mineral);
               
               return (
-                <Link key={mineral.id} href={`/mineral/${mineral.id}`}>
-                  <Card className="hover-elevate cursor-pointer" data-testid={`card-mineral-${mineral.id}`}>
-                    <CardHeader>
-                      <CardTitle data-testid={`text-mineral-name-${mineral.id}`}>{mineral.name}</CardTitle>
-                      {formula && (
-                        <CardDescription data-testid={`text-mineral-formula-${mineral.id}`}>
-                          {formula}
-                        </CardDescription>
+                <Card key={mineral.id} data-testid={`card-mineral-${mineral.id}`}>
+                  <CardHeader>
+                    <CardTitle data-testid={`text-mineral-name-${mineral.id}`}>{mineral.name}</CardTitle>
+                    {formula && (
+                      <CardDescription data-testid={`text-mineral-formula-${mineral.id}`}>
+                        {formula}
+                      </CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-sm">
+                      {strunzCode && (
+                        <div data-testid={`text-mineral-strunz-${mineral.id}`}>
+                          <span className="text-muted-foreground">Strunz:</span>{' '}
+                          <span className="font-medium">{strunzCode}</span>
+                        </div>
                       )}
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-sm">
-                        {strunzCode && (
-                          <div data-testid={`text-mineral-strunz-${mineral.id}`}>
-                            <span className="text-muted-foreground">Strunz:</span>{' '}
-                            <span className="font-medium">{strunzCode}</span>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                    </div>
+                  </CardContent>
+                </Card>
               );
             })}
           </div>
