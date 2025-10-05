@@ -187,7 +187,7 @@ export default function MineralSearchPage() {
                 onChange={(e) => setExactMatchMode(e.target.checked)}
               />
               <span className="text-sm font-medium">
-                {exactMatchMode ? 'Exact Match' : 'Containing'}
+                {exactMatchMode ? 'IMA Search' : 'Containing'}
               </span>
             </label>
           </div>
@@ -211,7 +211,13 @@ export default function MineralSearchPage() {
         {!isLoading && !error && activeSearch && minerals.length === 0 && (
           <Card data-testid="card-no-results">
             <CardContent className="pt-6 text-center">
-              <p className="text-muted-foreground">No minerals found matching "{activeSearch}"</p>
+              {exactMatchMode ? (
+                <p className="text-muted-foreground">
+                  "{activeSearch}" is not an IMA approved mineral type, try removing the IMA search for wide search.
+                </p>
+              ) : (
+                <p className="text-muted-foreground">No minerals found matching "{activeSearch}"</p>
+              )}
             </CardContent>
           </Card>
         )}
