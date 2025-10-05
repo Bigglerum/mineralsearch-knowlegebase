@@ -28,13 +28,18 @@ export default function MineralSearchPage() {
     
     const subscriptMap: { [key: string]: string } = {
       '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄',
-      '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉'
+      '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉',
+      'a': 'ₐ', 'e': 'ₑ', 'h': 'ₕ', 'i': 'ᵢ', 'j': 'ⱼ',
+      'k': 'ₖ', 'l': 'ₗ', 'm': 'ₘ', 'n': 'ₙ', 'o': 'ₒ',
+      'p': 'ₚ', 'r': 'ᵣ', 's': 'ₛ', 't': 'ₜ', 'u': 'ᵤ',
+      'v': 'ᵥ', 'x': 'ₓ'
     };
     
     const superscriptMap: { [key: string]: string } = {
       '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
       '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
-      '+': '⁺', '-': '⁻'
+      '+': '⁺', '-': '⁻', '=': '⁼', '(': '⁽', ')': '⁾',
+      'n': 'ⁿ'
     };
     
     let result = html;
@@ -47,6 +52,10 @@ export default function MineralSearchPage() {
       return content.split('').map((char: string) => superscriptMap[char] || char).join('');
     });
     
+    result = result.replace(/<mi>/g, '').replace(/<\/mi>/g, '');
+    result = result.replace(/\{10_11\}/g, '{10̄11}');
+    result = result.replace(/\{([0-9]+)_([0-9]+)\}/g, '{$1̄$2}');
+    
     return result;
   };
 
@@ -54,10 +63,15 @@ export default function MineralSearchPage() {
     const { strunz10ed1, strunz10ed2, strunz10ed3, strunz10ed4 } = mineral;
     if (!strunz10ed1 || strunz10ed1 === '0') return null;
     
-    let code = strunz10ed1;
-    if (strunz10ed2 && strunz10ed2 !== '0') code += `.${strunz10ed2}`;
-    if (strunz10ed3 && strunz10ed3 !== '0') code += `.${strunz10ed3}`;
-    if (strunz10ed4 && strunz10ed4 !== '0' && strunz10ed4 !== '') code += `.${strunz10ed4}`;
+    const part1 = strunz10ed1;
+    const part2 = (strunz10ed2 && strunz10ed2 !== '0') ? strunz10ed2.toUpperCase() : '';
+    const part3 = (strunz10ed3 && strunz10ed3 !== '0') ? strunz10ed3.toUpperCase() : '';
+    const part4 = (strunz10ed4 && strunz10ed4 !== '0' && strunz10ed4 !== '') ? strunz10ed4.padStart(2, '0') : '';
+    
+    let code = part1;
+    if (part2) code += `.${part2}`;
+    if (part3) code += `.${part3}`;
+    if (part4) code += `.${part4}`;
     
     return code;
   };
