@@ -152,6 +152,31 @@ export const mindatMinerals = pgTable("mindat_minerals", {
   updtTimeIdx: index("mindat_mineral_updt_time_idx").on(table.updtTime),
 }));
 
+export const rruffMinerals = pgTable("rruff_minerals", {
+  id: serial("id").primaryKey(),
+  mineralName: text("mineral_name").notNull(),
+  mineralNameHtml: text("mineral_name_html"),
+  imaChemistry: text("ima_chemistry"),
+  chemistryElements: text("chemistry_elements"),
+  yearFirstPublished: integer("year_first_published"),
+  imaStatus: text("ima_status"),
+  structuralGroupname: text("structural_groupname"),
+  crystalSystems: text("crystal_systems"),
+  valenceElements: text("valence_elements"),
+  imaSymbol: text("ima_symbol"),
+  mindatId: integer("mindat_id"),
+  enrichmentStatus: varchar("enrichment_status", { length: 20 }).default('not_enriched'),
+  enrichedAt: timestamp("enriched_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  mineralNameIdx: index("rruff_mineral_name_idx").on(table.mineralName),
+  structuralGroupIdx: index("rruff_structural_group_idx").on(table.structuralGroupname),
+  imaStatusIdx: index("rruff_ima_status_idx").on(table.imaStatus),
+  enrichmentIdx: index("rruff_enrichment_idx").on(table.enrichmentStatus),
+  mindatIdIdx: index("rruff_mindat_id_idx").on(table.mindatId),
+}));
+
 export const ionicChemistry = pgTable("ionic_chemistry", {
   id: serial("id").primaryKey(),
   mineralName: text("mineral_name").notNull(),
@@ -334,6 +359,12 @@ export const insertMindatMineralSchema = createInsertSchema(mindatMinerals).omit
   updatedAt: true,
 });
 
+export const insertRruffMineralSchema = createInsertSchema(rruffMinerals).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertIonicChemistrySchema = createInsertSchema(ionicChemistry).omit({
   id: true,
   createdAt: true,
@@ -396,6 +427,9 @@ export type DataSource = typeof dataSources.$inferSelect;
 
 export type InsertMindatMineral = z.infer<typeof insertMindatMineralSchema>;
 export type MindatMineral = typeof mindatMinerals.$inferSelect;
+
+export type InsertRruffMineral = z.infer<typeof insertRruffMineralSchema>;
+export type RruffMineral = typeof rruffMinerals.$inferSelect;
 
 export type InsertIonicChemistry = z.infer<typeof insertIonicChemistrySchema>;
 export type IonicChemistry = typeof ionicChemistry.$inferSelect;
