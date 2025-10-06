@@ -11,7 +11,7 @@ const rruffImport = RruffImportService.getInstance();
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
-  // Mineral Search Routes (Live Mindat API)
+  // Mineral Search Routes (RRUFF Database)
   app.get('/api/minerals/search', async (req: Request, res: Response) => {
     try {
       const { 
@@ -30,24 +30,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const response = await mindatAPI.searchMinerals({
-        name: searchName,
+      const results = await storage.searchRruffMinerals(searchName, {
         page: parseInt(page as string),
-        page_size: parseInt(page_size as string),
-        fields: 'id,name,mindat_formula,ima_formula,strunz10ed1,strunz10ed2,strunz10ed3,strunz10ed4,ima_status,varietyof,synid,entrytype_text'
+        pageSize: parseInt(page_size as string),
       });
 
-      return res.json({ 
-        results: response.results || [],
-        count: response.count || 0,
-      });
+      return res.json(results);
     } catch (error) {
       console.error('Error searching minerals:', error);
       return res.status(500).json({ error: 'Failed to search minerals' });
     }
   });
 
-  // Groups/Series Search Routes (Live Mindat API)
+  // Groups/Series Search Routes (RRUFF Database)
   app.get('/api/groups-series/search', async (req: Request, res: Response) => {
     try {
       const { 
@@ -66,22 +61,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const response = await mindatAPI.searchMinerals({
-        name: searchName,
+      const results = await storage.searchRruffGroups(searchName, {
         page: parseInt(page as string),
-        page_size: parseInt(page_size as string),
-        fields: 'id,name,mindat_formula,ima_formula,strunz10ed1,strunz10ed2,strunz10ed3,strunz10ed4,entrytype_text'
+        pageSize: parseInt(page_size as string),
       });
 
-      const groupsAndSeries = (response.results || []).filter((m: any) => {
-        const entryType = m.entrytype_text?.toLowerCase() || '';
-        return entryType.includes('group') || entryType.includes('series') || entryType.includes('supergroup');
-      });
-
-      return res.json({ 
-        results: groupsAndSeries,
-        count: groupsAndSeries.length,
-      });
+      return res.json(results);
     } catch (error) {
       console.error('Error searching groups/series:', error);
       return res.status(500).json({ error: 'Failed to search groups/series' });

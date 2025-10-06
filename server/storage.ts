@@ -5,6 +5,7 @@ import {
   strunzClassifications,
   syncJobs,
   favorites,
+  rruffMinerals,
   type User,
   type InsertUser,
   type Mineral,
@@ -15,7 +16,10 @@ import {
   type InsertStrunzClassification,
   type SyncJob,
   type InsertSyncJob,
+  type RruffMineral,
 } from "@shared/schema";
+import { db } from "./db";
+import { ilike, or, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -51,6 +55,9 @@ export interface IStorage {
   createSyncJob(job: InsertSyncJob): Promise<SyncJob>;
   updateSyncJob(id: number, job: Partial<InsertSyncJob>): Promise<SyncJob | undefined>;
   getRecentSyncJobs(limit: number): Promise<SyncJob[]>;
+
+  searchRruffMinerals(searchTerm: string, options?: { page?: number; pageSize?: number }): Promise<{ results: RruffMineral[]; count: number }>;
+  searchRruffGroups(searchTerm: string, options?: { page?: number; pageSize?: number }): Promise<{ results: RruffMineral[]; count: number }>;
 }
 
 export class MemStorage implements IStorage {
@@ -331,6 +338,80 @@ export class MemStorage implements IStorage {
     return jobs
       .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0))
       .slice(0, limit);
+  }
+
+  async searchRruffMinerals(
+    searchTerm: string, 
+    options?: { page?: number; pageSize?: number }
+  ): Promise<{ results: RruffMineral[]; count: number }> {
+    const page = options?.page || 1;
+    const pageSize = options?.pageSize || 20;
+    const offset = (page - 1) * pageSize;
+
+    const searchPattern = `%${searchTerm}%`;
+
+    const [results, countResult] = await Promise.all([
+      db.select()
+        .from(rruffMinerals)
+        .where(
+          or(
+            ilike(rruffMinerals.mineralName, searchPattern),
+            ilike(rruffMinerals.imaChemistry, searchPattern),
+            ilike(rruffMinerals.imaSymbol, searchPattern)
+          )
+        )
+        .limit(pageSize)
+        .offset(offset)
+        .orderBy(rruffMinerals.mineralName),
+      
+      db.select({ count: sql<number>`count(*)` })
+        .from(rruffMinerals)
+        .where(
+          or(
+            ilike(rruffMinerals.mineralName, searchPattern),
+            ilike(rruffMinerals.imaChemistry, searchPattern),
+            ilike(rruffMinerals.imaSymbol, searchPattern)
+          )
+        )
+    ]);
+
+    return {
+      results,
+      count: Number(countResult[0]?.count || 0),
+    };
+  }
+
+  async searchRruffGroups(
+    searchTerm: string,
+    options?: { page?: number; pageSize?: number }
+  ): Promise<{ results: RruffMineral[]; count: number }> {
+    const page = options?.page || 1;
+    const pageSize = options?.pageSize || 20;
+    const offset = (page - 1) * pageSize;
+
+    const searchPattern = `%${searchTerm}%`;
+
+    const [results, countResult] = await Promise.all([
+      db.select()
+        .from(rruffMinerals)
+        .where(
+          ilike(rruffMinerals.structuralGroupname, searchPattern)
+        )
+        .limit(pageSize)
+        .offset(offset)
+        .orderBy(rruffMinerals.structuralGroupname, rruffMinerals.mineralName),
+      
+      db.select({ count: sql<number>`count(*)` })
+        .from(rruffMinerals)
+        .where(
+          ilike(rruffMinerals.structuralGroupname, searchPattern)
+        )
+    ]);
+
+    return {
+      results,
+      count: Number(countResult[0]?.count || 0),
+    };
   }
 }
 
