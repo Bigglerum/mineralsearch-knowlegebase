@@ -154,7 +154,7 @@ export const mindatMinerals = pgTable("mindat_minerals", {
 
 export const rruffMinerals = pgTable("rruff_minerals", {
   id: serial("id").primaryKey(),
-  mineralName: text("mineral_name").notNull().unique(),
+  mineralName: text("mineral_name").notNull(),
   mineralNameHtml: text("mineral_name_html"),
   imaChemistry: text("ima_chemistry"),
   chemistryElements: text("chemistry_elements"),
@@ -163,7 +163,7 @@ export const rruffMinerals = pgTable("rruff_minerals", {
   structuralGroupname: text("structural_groupname"),
   crystalSystems: text("crystal_systems"),
   valenceElements: text("valence_elements"),
-  imaSymbol: text("ima_symbol"),
+  imaSymbol: text("ima_symbol").notNull().unique(),
   mindatId: integer("mindat_id"),
   enrichmentStatus: varchar("enrichment_status", { length: 20 }).default('not_enriched'),
   enrichedAt: timestamp("enriched_at"),
