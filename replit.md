@@ -82,9 +82,12 @@ Preferred communication style: Simple, everyday language.
 
 **Third-Party APIs**
 - **Mindat API**: Primary data source for mineral information, localities, and classifications
-  - Authentication via API key or username/password
+  - Authentication via API key stored in Replit Secrets (MINDAT_API_KEY)
   - Proxy service implemented for rate limiting and error handling
-  - Sync service for batch importing mineral data into local database
+  - Production sync service (MindatSyncService) with comprehensive 146-field mapping
+  - Hash-based change detection (overall + field-level) for efficient incremental updates
+  - Automatic population of mineral_name_index for IMA-approved minerals
+  - Batch processing with configurable pagination and error recovery
 
 **Database Services**
 - **Neon Serverless PostgreSQL**: Cloud-hosted PostgreSQL database
