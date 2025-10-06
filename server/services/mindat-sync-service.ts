@@ -464,4 +464,53 @@ export class MindatSyncService {
 
     await this.upsertMineral(mineralData, progress);
   }
+
+  async searchAndSync(searchQuery: string, options: { page?: number; pageSize?: number } = {}): Promise<{ results: any[]; count: number }> {
+    const { page = 1, pageSize = 20 } = options;
+
+    await this.ensureMindatDataSource();
+
+    const searchResponse = await this.mindatAPI.searchMinerals({
+      name: searchQuery,
+      page,
+      page_size: pageSize,
+      fields: '*',
+    });
+
+    const results: any[] = [];
+    const progress: SyncProgress = {
+      totalProcessed: 0,
+      totalFailed: 0,
+      totalUpdated: 0,
+      totalCreated: 0,
+      errors: [],
+    };
+
+    if (searchResponse.results && searchResponse.results.length > 0) {
+      for (const searchResult of searchResponse.results) {
+        try {
+          const mineralData = await this.mindatAPI.getMineralById(searchResult.id);
+          
+          await this.upsertMineral(mineralData, progress);
+          
+          const stored = await db.select()
+            .from(mindatMinerals)
+            .where(eq(mindatMinerals.mindatId, searchResult.id))
+            .limit(1);
+          
+          if (stored.length > 0) {
+            results.push(stored[0]);
+          }
+        } catch (error) {
+          console.error(`Error syncing mineral ${searchResult.id}:`, error);
+          progress.errors.push(`Failed to sync mineral ${searchResult.id}: ${error}`);
+        }
+      }
+    }
+
+    return {
+      results,
+      count: searchResponse.count || results.length,
+    };
+  }
 }
