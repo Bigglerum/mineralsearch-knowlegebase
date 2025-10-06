@@ -8,6 +8,16 @@ e-Rocks Mineral Explorer is a mobile-first web application for searching and exp
 
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+
+### October 6, 2025 - Fixed Database Data Type Errors
+- **Issue**: Application was failing to save mineral data due to database type conversion errors. The Mindat API was returning empty strings for integer/numeric fields and non-array values for array fields, causing PostgreSQL insertion failures.
+- **Solution**: Added data type conversion helper functions (`toInt`, `toReal`, `toArray`, `toString`) in `MindatSyncService` to properly convert:
+  - Empty strings to null for integer and real number fields
+  - Non-array values to proper arrays for array fields
+  - All string fields to properly handle empty/null values
+- **Result**: Mineral search now works correctly with data being properly synced from Mindat API to the PostgreSQL database.
+
 ## System Architecture
 
 ### Frontend Architecture
