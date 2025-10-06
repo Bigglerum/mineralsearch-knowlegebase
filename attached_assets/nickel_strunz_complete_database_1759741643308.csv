@@ -1,0 +1,326 @@
+Code,Name,Description,Level
+1,ELEMENTS,"Metals and intermetallic alloys; metalloids and nonmetals; carbides, silicides, nitrides, phosphides",1
+1.A,Metals and Intermetallic Alloys,,2
+1.AA,Copper-cupalite family,,3
+1.AB,Zinc-brass family,,3
+1.AC,Indium-tin family,,3
+1.AD,Mercury-amalgam family,,3
+1.AE,Iron-chromium family,,3
+1.AF,Platinum group elements,,3
+1.AG,PGE-metal alloys,,3
+1.AH,"Miscellaneous Elements, alloys",,3
+1.AI,Alloys of Iron and Titanium with Oxygen,,3
+1.B,"Metallic Carbides, Silicides, Nitrides, Phosphides and Hydrides",,2
+1.BA,Carbides,,3
+1.BB,Silicides,,3
+1.BC,Nitrides,,3
+1.BD,Phosphides,,3
+1.BE,Hydrides,,3
+1.C,Metalloids and Nonmetals,,2
+1.CA,Arsenic group elements,,3
+1.CB,Carbon-silicon family,,3
+1.CC,Sulphur-selenium-iodine,,3
+1.D,Nonmetallic Carbides and Nitrides,,2
+1.DA,Nonmetallic carbides,,3
+1.DB,Nonmetallic nitrides,,3
+2,SULPHIDES and SULPHOSALTS,"sulphides, selenides, tellurides; arsenides, antimonides, bismuthides; sulpharsenites, sulphantimonites, sulphbismuthites, etc.",1
+2.A,Alloys,,2
+2.AA,"Alloys of metalloids with Cu, Ag, Au",,3
+2.AB,Ni-metalloid alloys,,3
+2.AC,Alloys of metalloids with PGE,,3
+2.B,"Metal Sulphides, M: S > 1: 1 (mainly 2: 1)",,2
+2.BA,"With Cu, Ag, Au",,3
+2.BB,With Ni,,3
+2.BC,"With Rh, Pd, Pt, etc.",,3
+2.BD,"With Hg, Tl",,3
+2.BE,With Pb (Bi),,3
+2.C,"Metal Sulphides, M: S = 1: 1 (and similar)",,2
+2.CA,With Cu,,3
+2.CB,"With Zn, Fe, Cu, Ag, etc.",,3
+2.CC,"With Ni, Fe, Co, PGE, etc.",,3
+2.CD,"With Sn, Pb, Hg, etc.",,3
+2.D,"Metal Sulphides, M: S = 3:4 and 2:3",,2
+2.DA,M:S = 3:4,,3
+2.DB,M:S = 2:3,,3
+2.DC,Variable M:S,,3
+2.E,"Metal Sulphides, M: S <= 1:2",,2
+2.EA,"M:S = 1:2 - With Cu, Ag, Au",,3
+2.EB,"M:S = 1:2, with Fe, Co, Ni, PGE, etc.",,3
+2.EC,M:S = 1:>2,,3
+2.F,"Sulphides of arsenic, alkalies; sulphides with halide, oxide, hydroxide, H2O",,2
+2.FA,"With As, (Sb), S",,3
+2.FB,"With alkalies (without Cl, etc.)",,3
+2.FC,"With Cl, Br, I (halide-sulphides)",,3
+2.FD,"With O, OH, H2O",,3
+2.G,"Sulpharsenites, sulphantimonites, sulphbismuthites",,2
+2.GA,"Neso-sulpharsenites, etc. without additional S",,3
+2.GB,"Neso-sulpharsenites, etc. with additional S",,3
+2.GC,Poly-sulpharsenites,,3
+2.H,Sulphosalts of SnS archetype,,2
+2.HA,"With Cu, Ag, Fe (without Pb)",,3
+2.HB,"With Cu, Ag, Fe, Sn and Pb",,3
+2.HC,With only Pb,,3
+2.HD,With Tl,,3
+2.HE,"With alkalies, H2O",,3
+2.HF,With SnS and PbS archetype structure units,,3
+2.J,Sulphosalts of PbS archetype,,2
+2.JA,Galena derivatives with little or no Pb,,3
+2.JB,"Galena derivatives, with Pb",,3
+2.JC,"Galena derivatives, with Tl",,3
+2.K,"Sulpharsenates, Sulphantimonates",,2
+2.KA,"Sulpharsenates with (As,Sb)S4 tetrahedra",,3
+2.KB,Sulpharsenates with additional S,,3
+2.L,Unclassified Sulphosalts,,2
+2.LA,Without essential Pb,,3
+2.LB,With essential Pb,,3
+2.M,Oxysulphosalts,,2
+2.MA,Oxysulphosalts of Alkalies and Alkali Earths,,3
+3,HALIDES,,1
+3.A,"Simple halides, without H2O",,2
+3.AA,"M:X = 1:1, 2:3, 3:5, etc.",,3
+3.AB,M:X = 1:2,,3
+3.AC,M:X = 1:3,,3
+3.B,"Simple halides, with H2O",,2
+3.BA,M:X = 1:1 and 2:3,,3
+3.BB,M:X = 1:2,,3
+3.BC,M:X = 1:3,,3
+3.BD,Simple halides with H2O and additional OH,,3
+3.C,Complex halides,,2
+3.CA,Borofluorides,,3
+3.CB,Neso-aluminofluorides,,3
+3.CC,Soro-aluminofluorides,,3
+3.CD,Ino-aluminofluorides,,3
+3.CE,Phyllo-aluminofluorides,,3
+3.CF,Tekto-aluminofluorides,,3
+3.CG,"Aluminofluorides with CO3, SO4, PO4",,3
+3.CH,Silicofluorides,,3
+3.CJ,"With MX6 complexes; M = Fe, Mn, Cu",,3
+3.CK,"Halides of Bi, etc.",,3
+3.D,"Oxyhalides, hydroxyhalides and related double halides",,2
+3.DA,"With Cu, etc., without Pb",,3
+3.DB,"With Pb, Cu, etc.",,3
+3.DC,"With Pb (As,Sb,Bi), without Cu",,3
+3.DD,With Hg,,3
+3.DE,With Rare-Earth Elements,,3
+4,OXIDES,"Hydroxides, V[5,6] vanadates, arsenites, antimonites, bismuthites, sulphites, selenites, tellurites, iodates",1
+4.A,Metal: Oxygen = 2:1 and 1:1,,2
+4.B,Metal: Oxygen = 3:4 and similar,,2
+4.C,"Metal: Oxygen = 2: 3,3: 5, and similar",,2
+4.D,Metal: Oxygen = 1:2 and similar,,2
+4.E,Metal: Oxygen = < 1 :2,,2
+4.F,Hydroxides (without V or U),,2
+4.G,Uranyl Hydroxides,,2
+4.H,"V[5,6] Vanadates",,2
+4.J,"Arsenites, antimonites, bismuthites, sulphites, selenites, tellurites; iodates",,2
+4.K,Iodates: Trigonal [IO3] pyramids (mostly),,2
+5,CARBONATES,NITRATES,1
+5.A,"Carbonates without additional anions, without H2O",,2
+5.B,"Carbonates with additional anions, without H2O",,2
+5.C,"Carbonates without additional anions, with H2O",,2
+5.D,"Carbonates with additional anions, with H2O",,2
+5.E,Uranyl Carbonates,,2
+5.N,NITRATES,,2
+6,BORATES,,1
+6.A,Monoborates,,2
+6.B,Diborates,,2
+6.C,Triborates,,2
+6.D,Tetraborates,,2
+6.E,Pentaborates,,2
+6.F,Hexaborates,,2
+6.G,Heptaborates and other megaborates,,2
+6.H,Unclassified borates,,2
+7,SULPHATES,"selenates, tellurates, chromates, molybdates, wolframates",1
+7.A,"Sulphates (selenates, etc.) without additional anions, without H2O",,2
+7.AA,With small cations,,3
+7.AB,With medium-sized cations,,3
+7.AC,With medium-sized and large cations,,3
+7.AD,With only large cations,,3
+7.B,"Sulphates (selenates, etc.) with additional anions, without H2O",,2
+7.BA,With small cations,,3
+7.BB,With medium-sized cations,,3
+7.BC,With medium-sized and large cations,,3
+7.BD,With only large cations,,3
+7.C,"Sulphates (selenates, etc.) without additional anions, with H2O",,2
+7.CA,With small cations,,3
+7.CB,With only medium-sized cations,,3
+7.CC,With medium-sized and large cations,,3
+7.CD,With only large cations,,3
+7.D,"Sulphates (selenates, etc.) with additional anions, with H2O",,2
+7.DA,With small cations,,3
+7.DB,With only medium-sized cations; insular octahedra and finite units,,3
+7.DC,With only medium-sized cations; chains of edge-sharing octahedra,,3
+7.DD,With only medium-sized cations; sheets of edge-sharing octahedra,,3
+7.DE,With only medium-sized cations; unclassified,,3
+7.DF,With large and medium-sized cations,,3
+7.DG,"With large and medium-sized cations; with NO3, CO3, B(OH)4, SiO4 or IO3",,3
+7.E,Uranyl sulphates,,2
+7.EA,Without cations,,3
+7.EB,With medium-sized cations,,3
+7.EC,With medium-sized and large cations,,3
+7.F,Chromates,,2
+7.FA,Without additional anions,,3
+7.FB,"With additional O,V, S, Cl",,3
+7.FC,"With PO4, AsO4, SiO4",,3
+7.FD,Dichromates,,3
+7.G,"Molybdates, Wolframates and Niobates",,2
+7.GA,Without additional anions or H2O,,3
+7.GB,With additional anions and/or H2O,,3
+7.H,Uranium and uranyl molybdates and wolframates,,2
+7.HA,With U4+,,3
+7.HB,With U6+,,3
+7.J,Thiosulphates,,2
+7.JA,Thiosulphates of Pb,,3
+8,"PHOSPHATES, ARSENATES, VANADATES",,1
+8.A,"Phosphates, etc. without additional anions, without H2O",,2
+8.AA,With small cations (some also with larger ones),,3
+8.AB,With medium-sized cations,,3
+8.AC,With medium-sized and large cations,,3
+8.AD,With only large cations,,3
+8.B,"Phosphates, etc., with additional anions, without H2O",,2
+8.BA,With small and medium-sized cations,,3
+8.BB,"With only medium-sized cations, (OH, etc.):RO4 about 1:1",,3
+8.BC,"With only medium-sized cations, (OH, etc.):RO4 > 1:1 and < 2:1",,3
+8.BD,"With only medium-sized cations, (OH, etc.):RO4= 2:1",,3
+8.BE,"With only medium-sized cations, (OH, etc.):RO4 > 2:1",,3
+8.BF,"With medium-sized and large cations, (OH, etc.):RO4< 0.5:1",,3
+8.BG,"With medium-sized and large cations, (OH, etc.):RO4 = 0.5:1",,3
+8.BH,"With medium-sized and large cations, (OH,etc.):RO4 = 1:1",,3
+8.BJ,"With medium-sized and large cations, (OH, etc.):RO4= 1:5:1",,3
+8.BK,"With medium-sized and large cations, (OH, etc.):RO4 = 2:1, 2.5:1",,3
+8.BL,"With medium-sized and large cations, (OH, etc.):RO4 = 3:1",,3
+8.BM,"With medium-sized and large cations, (OH, etc.):RO4 = 4:1",,3
+8.BN,"With only large cations, (OH, etc.):RO4 = 0.33:1",,3
+8.BO,"With only large cations, (OH, etc.):RO4 about 1:1",,3
+8.C,"Phosphates without additional anions, with H2O",,2
+8.CA,With small and large/medium cations,,3
+8.CB,"With only medium-sized cations, RO4:H2O = 1:1",,3
+8.CC,"With only medium-sized cations, RO4:H2O = 1:1.5",,3
+8.CD,"With only medium-sized cations, RO4:H2O = 1:2",,3
+8.CE,"With only medium-sized cations, RO4:H2O about 1:2.5",,3
+8.CF,"With large and medium-sized cations, RO4:H2O > 1:1",,3
+8.CG,"With large and medium-sized cations, RO4:H2O = 1:1",,3
+8.CH,"With large and medium-sized cations, RO4:H2O < 1:1",,3
+8.CJ,With only large cations,,3
+8.D,"Phosphates, etc. with additional anions, with H2O",,2
+8.DA,With small (and occasionally larger) cations,,3
+8.DB,"With only medium-sized cations, (OH, etc.):RO4< 1:1",,3
+8.DC,"With only medium-sized cations, (OH, etc.):RO4 = 1:1 and < 2:1",,3
+8.DD,"With only medium-sized cations, (OH, etc.):RO4= 2:1",,3
+8.DE,"With only medium-sized cations, (OH, etc.):RO4 = 3:1",,3
+8.DF,"With only medium-sized cations, (OH,etc.):RO4 > 3:1",,3
+8.DG,"With large and medium-sized cations, (OH, etc.):RO4< 0.5:1",,3
+8.DH,"With large and medium-sized cations, (OH, etc.):RO4 < 1:1",,3
+8.DJ,"With large and medium-sized cations, (OH, etc.):RO4 = 1:1",,3
+8.DK,"With large and medium-sized cations, (OH, etc.):RO4 > 1:1 and < 2:1",,3
+8.DL,"With large and medium-sized cations, (OH, etc.):RO4 = 2:1",,3
+8.DM,"With large and medium-sized cations, (OH, etc.):RO4 > 2:1",,3
+8.DN,With only large cations,,3
+8.DO,"With CO3, SO4, SiO4",,3
+8.E,Uranyl phosphates and arsenates,,2
+8.EA,UO2:RO4 = 1:2,,3
+8.EB,UO2:RO4 = 1:1,,3
+8.EC,UO2:RO4 = 3:2,,3
+8.ED,Unclassified,,3
+8.F,"Polyphosphates, Polyarsenates, [4]-Polyvanadates",,2
+8.FA,"Polyphosphates, etc., without OH and H2O; dimers of corner-sharing RO4 tetrahedra.",,3
+8.FB,"Polyphosphates, etc., with OH only",,3
+8.FC,"Polyphosphates, etc., with H2O only",,3
+8.FD,"Polyphosphates, etc., with OH and H2O",,3
+8.FE,Ino-[4]-vanadates,,3
+9,SILICATES,Germanates,1
+9.A,Nesosilicates,,2
+9.AA,Nesosilicates without additional anions; cations in tetrahedral [4] coordination,,3
+9.AB,Nesosilicates without additional anions; cations in [4] and greater coordination,,3
+9.AC,Nesosilicates without additional anions; cations in octahedral [6] coordination,,3
+9.AD,Nesosilicates without additional anions; cations in [6] and/or greater coordination,,3
+9.AE,"Nesosilicates with additional anions (O,OH,F,H2O); cations in tetrahedral [4] coordination",,3
+9.AF,"Nesosilicates with additional anions; cations in [4], [5] and/or only [6] coordination",,3
+9.AG,Nesosilicates with additional anions; cations in > [6] +- [6] coordination,,3
+9.AH,"Nesosilicates with CO3, SO4, PO4, etc.",,3
+9.AJ,"Nesosilicates with BO3 triangles and/or B[4], Be[4] tetrahedra, cornersharing with SiO4",,3
+9.AK,Uranyl neso- and polysilicates,,3
+9.B,Sorosilicates,,2
+9.BA,"Si2O7 groups, without non-tetrahedral anions; cations in tetrahedral [4] coordination",,3
+9.BB,"Si2O7 groups, without non-tetrahedral anions; cations in tetrahedral [4] and greater coordination",,3
+9.BC,"Si2O7 groups, without non-tetrahedral anions; cations in octahedral [6] and greater coordination",,3
+9.BD,"Si2O7 groups, with additional anions; cations in tetrahedral [4] and greater coordination",,3
+9.BE,"Si2O7 groups, with additional anions; cations in octahedral [6] and greater coordination",,3
+9.BF,Sorosilicates with mixed SiO4 and Si2O7 groups; cations in tetrahedral [4] and greater coordination,,3
+9.BG,Sorosilicates with mixed SiO4 and Si2O7 groups; cations in octahedral [6] and greater coordination,,3
+9.BH,"Sorosilicates with Si3O10, Si4O11, etc. anions; cations in tetrahedral [4] and greater coordination",,3
+9.BJ,"Sorosilicates with Si3O10, Si4O11, etc. anions; cations in octahedral [6] and greater coordination",,3
+9.BK,Unclassified sorosilicates,,3
+9.C,Cyclosilicates,,2
+9.CA,"[Si3O9]6- 3-membered single rings (dreier-Einfachringe), without insular complex anions",,3
+9.CB,"[Si3O9]6- 3-membered single rings, with insular complex anions",,3
+9.CC,[Si3O9]6- - branched 3-membered single rings,,3
+9.CD,[Si3O9]6- 3-membered double rings,,3
+9.CE,"[Si4O12]8- 4-membered single rings (vierer-Einfachringe), without insular complex anions",,3
+9.CF,"[Si4O12]8- 4-membered single rings, with insular complex anions",,3
+9.CG,[Si4O12]8- branched 4-membered single rings,,3
+9.CH,[Si4O12]8- 4-membered double rings,,3
+9.CJ,"[Si6O18]12- 6-membered single rings (sechser-Einfachringe), without insular complex anions",,3
+9.CK,"[Si6O18]12- 6-membered single rings, with insular complex anions",,3
+9.CL,[Si6O18]12- branched 6-membered single rings,,3
+9.CM,[Si6O18]12- 6-membered double rings (sechser-Doppelringe),,3
+9.CN,[Si8O24]16- 8-membered rings,,3
+9.CO,[Si9O27]18- 9-membered rings,,3
+9.CP,12-membered and larger rings,,3
+9.D,Inosilicates,,2
+9.DA,"Inosilicates with 2-periodic single chains, Si2O6; pyroxene family",,3
+9.DB,"Inosilicates with 2-periodic single chains, Si2O6; Pyroxene-related minerals",,3
+9.DC,Inosilicates with branched 2-periodic single chains; Si2O6 + 2SiO3 Si4O12,,3
+9.DD,"Inosilicates with 2-periodic double chains, Si4O11; Orthoamphiboles",,3
+9.DE,"Inosilicates with 2-periodic double chains, Si4O11; Clinoamphiboles",,3
+9.DF,Inosilicates with 2-periodic multiple chains,,3
+9.DG,Inosilicates with 3-periodic single and multiple chains,,3
+9.DH,"Inosilicates with 4-periodic single chains, Si4O12",,3
+9.DJ,Inosilicates with 4-periodic double and triple chains,,3
+9.DK,Inosilicates with 5-periodic single chains,,3
+9.DL,"Inosilicates with 5-periodic double chains, Si10O28",,3
+9.DM,Inosilicates with 6-periodic single chains,,3
+9.DN,Inosilicates with 6-periodic double chains,,3
+9.DO,"Inosilicates with 7-, 8-, 10-, 12- and 14-periodic chains",,3
+9.DP,Transitional ino-phyllosilicate structures,,3
+9.DQ,Modular Inosilicate-Sorosilicate Structures,,3
+9.E,Phyllosilicates,,2
+9.EA,"Single nets of tetrahedra with 4-, 5-, (6-), and 8-membered rings",,3
+9.EB,Double nets with 4- and 6-membered rings,,3
+9.EC,"Phyllosilicates with mica sheets, composed of tetrahedral and octahedral nets",,3
+9.ED,Phyllosilicates with kaolinite layers composed of tetrahedral and octahedral nets,,3
+9.EE,Single tetrahedral nets of 6-membered rings connected by octahedral nets or octahedral bands,,3
+9.EF,"Single nets with 6-membered rings, connected by M[4], M[8], etc.",,3
+9.EG,Double nets with 6-membered and larger rings,,3
+9.EH,Transitional structures between phyllosilicate and other silicate units,,3
+9.EJ,Unclassified phyllosilicates,,3
+9.F,Tektosilicates without zeolitic H2O,,2
+9.FA,Tektosilicates without additional non-tetrahedral anions,,3
+9.FB,Tektosilicates with additional anions,,3
+9.G,Tektosilicates with zeolitic H2O; zeolite family,,2
+9.GA,Zeolites with T5O10 Units – The Fibrous Zeolites,,3
+9.GB,Chains of single connected 4-membered rings,,3
+9.GC,Chains of doubly-connected 4-membered rings,,3
+9.GD,Chains of 6-membered rings – tabular zeolites,,3
+9.GE,Chains of T10O20 Tetrahedra,,3
+9.GF,Other Rare Zeolites,,3
+9.GG,Unclassified zeolites,,3
+9.H,Unclassified silicates,,2
+9.HA,With Alkali and Alkali-earth Elements,,3
+9.HB,"With Ti, V, Cr",,3
+9.HC,"With Mn, Fe",,3
+9.HD,"With Co, Ni",,3
+9.HE,"With Cu, Zn",,3
+9.HF,"With Nb, Ta, Zr",,3
+9.HG,"With REE, Th",,3
+9.HH,With Pb,,3
+9.J,Germanates,,2
+10,ORGANIC COMPOUNDS,,1
+10.A,Salts of organic acids,,2
+10.AA,"Formates, Acetates, etc.",,3
+10.AB,Oxalates,,3
+10.AC,Benzine Salts,,3
+10.AD,Cyanates,,3
+10.B,Hydrocarbons,,2
+10.BA,Hydrocarbons,,3
+10.C,Miscellaneous Organic Minerals,,2
+10.CA,Miscellaneous Organic Minerals,,3
