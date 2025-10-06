@@ -34,8 +34,8 @@ export default function MineralSearchPage() {
   if (exactMatchMode && activeSearch) {
     const exactMatch = mineralsWithoutGroups.find(m => {
       const nameMatches = m.name?.toLowerCase() === activeSearch.toLowerCase();
-      const isApprovedOrGrandfathered = m.ima_status && m.ima_status.length > 0 && 
-        (m.ima_status.includes('APPROVED') || m.ima_status.includes('GRANDFATHERED'));
+      const statusLower = (m.ima_status || '').toLowerCase();
+      const isApprovedOrGrandfathered = statusLower.includes('approved') || statusLower.includes('grandfathered');
       return nameMatches && isApprovedOrGrandfathered;
     });
     
