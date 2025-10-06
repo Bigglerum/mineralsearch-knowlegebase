@@ -11,7 +11,7 @@ const rruffImport = RruffImportService.getInstance();
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
-  // Mineral Search Routes (RRUFF Database)
+  // Mineral Search Routes (Mindat API -> Database)
   app.get('/api/minerals/search', async (req: Request, res: Response) => {
     try {
       const { 
@@ -30,7 +30,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const results = await storage.searchRruffMinerals(searchName, {
+      const results = await mindatSync.searchAndSync(searchName, {
         page: parseInt(page as string),
         pageSize: parseInt(page_size as string),
       });
