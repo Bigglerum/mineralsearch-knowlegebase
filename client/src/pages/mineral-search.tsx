@@ -9,7 +9,7 @@ import type { Mineral } from '@shared/schema';
 export default function MineralSearchPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSearch, setActiveSearch] = useState('');
-  const [exactMatchMode, setExactMatchMode] = useState(false);
+  const [exactMatchMode, setExactMatchMode] = useState(true);
 
   const { data, isLoading, error } = useQuery({
     queryKey: [`/api/minerals/search?q=${encodeURIComponent(activeSearch)}`],
