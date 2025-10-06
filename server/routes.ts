@@ -2,8 +2,10 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { MindatAPIService } from "./services/mindat-api-service";
+import { MindatSyncService } from "./services/mindat-sync-service";
 
 const mindatAPI = MindatAPIService.getInstance();
+const mindatSync = MindatSyncService.getInstance();
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -294,6 +296,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error validating credentials:', error);
       return res.json({ valid: false });
+    }
+  });
+
+  // Production Mindat sync to mindat_minerals table
+  app.post('/api/mindat/sync/production', async (req: Request, res: Response) => {
+    try {
+      const {
+        startPage = 1,
+        maxPages = 10,
+        pageSize = 100,
+        imaOnly = false,
+      } = req.body;
+
+      console.log(`Starting production Mindat sync: pages ${startPage}-${maxPages}, pageSize: ${pageSize}, IMA only: ${imaOnly}`);
+
+      const progress = await mindatSync.syncMinerals({
+        startPage,
+        maxPages,
+        pageSize,
+        imaOnly,
+      });
+
+      return res.json({
+        success: true,
+        totalProcessed: progress.totalProcessed,
+        totalCreated: progress.totalCreated,
+        totalUpdated: progress.totalUpdated,
+        totalFailed: progress.totalFailed,
+        errors: progress.errors.slice(0, 10),
+      });
+    } catch (error: any) {
+      console.error('Error in production sync:', error);
+      return res.status(500).json({
+        error: 'Production sync failed',
+        message: error.message,
+      });
+    }
+  });
+
+  // Sync single mineral by Mindat ID
+  app.post('/api/mindat/sync/mineral/:id', async (req: Request, res: Response) => {
+    try {
+      const mindatId = parseInt(req.params.id);
+      await mindatSync.syncSingleMineral(mindatId);
+      return res.json({ success: true, mineralId: mindatId });
+    } catch (error: any) {
+      console.error(`Error syncing mineral ${req.params.id}:`, error);
+      return res.status(500).json({
+        error: 'Failed to sync mineral',
+        message: error.message,
+      });
     }
   });
 
