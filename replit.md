@@ -52,12 +52,25 @@ Preferred communication style: Simple, everyday language.
 - PostgreSQL (via Neon serverless) for primary data storage
 - Schema includes: minerals, localities, Strunz classifications, users, sync jobs, and favorites
 
-**Key Data Models**
-- **Minerals**: Comprehensive properties including chemical formula, crystal system, physical properties, Strunz classification, and Mindat metadata
-- **Localities**: Geographic locations with country and regional data
-- **Strunz Classifications**: Hierarchical mineral classification system
-- **Users**: Authentication and authorization with API key management
-- **Sync Jobs**: Background synchronization tracking for Mindat API data imports
+**Production-Grade Database Architecture**
+
+*Data Storage Strategy*
+- PostgreSQL as primary data store with full normalization
+- Elasticsearch integration planned for search and LLM-ready data serving
+- Multi-source data consolidation with provenance tracking
+- Hash-based change detection for efficient syncing
+
+*Core Tables*
+- **mindat_minerals**: Complete Mindat source data (146 fields) - single source of truth for mineralogical data
+- **mineral_name_index**: Canonical mineral name registry with IMA approval status, aliases, and variety relationships
+- **ionic_chemistry**: User's proprietary ionic chemistry datasets (original + UTF8 supplement) with cation/anion/silicate breakdowns
+- **data_sources**: Registry of all data sources with priority levels for conflict resolution
+- **data_conflicts**: Tracks conflicts between sources with resolution status for exception reporting
+- **minerals**: Legacy/current search table for backward compatibility
+- **localities**: Geographic locations with country and regional data
+- **strunzClassifications**: Hierarchical mineral classification system
+- **users**: Authentication and authorization with API key management
+- **sync_jobs**: Background synchronization tracking for weekly Mindat imports
 
 **Authentication & Security**
 - Session-based authentication (connect-pg-simple for PostgreSQL session storage)
