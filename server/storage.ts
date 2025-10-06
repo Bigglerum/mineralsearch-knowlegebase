@@ -104,7 +104,6 @@ export class MemStorage implements IStorage {
       username: insertUser.username,
       email: insertUser.email ?? null,
       password: insertUser.password ?? null,
-      apiKey: insertUser.apiKey ?? null,
       role: insertUser.role || 'user',
       isActive: true,
       createdAt: new Date(),
