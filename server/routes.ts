@@ -3,9 +3,11 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { MindatAPIService } from "./services/mindat-api-service";
 import { MindatSyncService } from "./services/mindat-sync-service";
+import { RruffImportService } from "./services/rruff-import-service";
 
 const mindatAPI = MindatAPIService.getInstance();
 const mindatSync = MindatSyncService.getInstance();
+const rruffImport = RruffImportService.getInstance();
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -345,6 +347,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error(`Error syncing mineral ${req.params.id}:`, error);
       return res.status(500).json({
         error: 'Failed to sync mineral',
+        message: error.message,
+      });
+    }
+  });
+
+  // Import RRUFF minerals from CSV
+  app.post('/api/rruff/import', async (req: Request, res: Response) => {
+    try {
+      const csvPath = 'attached_assets/RRUFF_Export_20250908_091618_1759745369897.csv';
+      console.log('Starting RRUFF CSV import...');
+      
+      const progress = await rruffImport.importFromCSV(csvPath);
+      
+      return res.json({
+        success: true,
+        totalProcessed: progress.totalProcessed,
+        totalCreated: progress.totalCreated,
+        totalFailed: progress.totalFailed,
+        errors: progress.errors.slice(0, 10),
+      });
+    } catch (error: any) {
+      console.error('Error importing RRUFF data:', error);
+      return res.status(500).json({
+        error: 'RRUFF import failed',
+        message: error.message,
+      });
+    }
+  });
+
+  // Clear RRUFF data
+  app.post('/api/rruff/clear', async (req: Request, res: Response) => {
+    try {
+      await rruffImport.clearRruffData();
+      return res.json({ success: true, message: 'RRUFF data cleared' });
+    } catch (error: any) {
+      console.error('Error clearing RRUFF data:', error);
+      return res.status(500).json({
+        error: 'Failed to clear RRUFF data',
+        message: error.message,
+      });
+    }
+  });
+
+  // Get RRUFF import stats
+  app.get('/api/rruff/stats', async (req: Request, res: Response) => {
+    try {
+      const stats = await rruffImport.getImportStats();
+      return res.json(stats);
+    } catch (error: any) {
+      console.error('Error getting RRUFF stats:', error);
+      return res.status(500).json({
+        error: 'Failed to get stats',
         message: error.message,
       });
     }

@@ -154,7 +154,7 @@ export const mindatMinerals = pgTable("mindat_minerals", {
 
 export const rruffMinerals = pgTable("rruff_minerals", {
   id: serial("id").primaryKey(),
-  mineralName: text("mineral_name").notNull(),
+  mineralName: text("mineral_name").notNull().unique(),
   mineralNameHtml: text("mineral_name_html"),
   imaChemistry: text("ima_chemistry"),
   chemistryElements: text("chemistry_elements"),
