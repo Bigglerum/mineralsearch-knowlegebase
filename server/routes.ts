@@ -4,10 +4,15 @@ import { storage } from "./storage";
 import { MindatAPIService } from "./services/mindat-api-service";
 import { MindatSyncService } from "./services/mindat-sync-service";
 import { RruffImportService } from "./services/rruff-import-service";
+import { MindatCSVImportV2 } from "./services/mindat-csv-import-v2";
+import { MindatIncrementalSync } from "./services/mindat-incremental-sync";
+import { triggerDailySync, triggerWeeklyValidation } from "./cron/sync-scheduler";
 
 const mindatAPI = MindatAPIService.getInstance();
 const mindatSync = MindatSyncService.getInstance();
 const rruffImport = RruffImportService.getInstance();
+const mindatCSVImport = MindatCSVImportV2.getInstance();
+const incrementalSync = MindatIncrementalSync.getInstance();
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -384,6 +389,199 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('Error getting RRUFF stats:', error);
       return res.status(500).json({
         error: 'Failed to get stats',
+        message: error.message,
+      });
+    }
+  });
+
+  // Import Mindat minerals from CSV dump
+  app.post('/api/mindat-csv/import', async (req: Request, res: Response) => {
+    try {
+      const {
+        filePath = 'attached_assets/mindatdump.csv',
+        batchSize = 100,
+        skipExisting = false
+      } = req.body;
+
+      console.log(`Starting Mindat CSV import from: ${filePath}`);
+      console.log(`Batch size: ${batchSize}, Skip existing: ${skipExisting}`);
+
+      const progress = await mindatCSVImport.importFromCSV(filePath, {
+        batchSize,
+        skipExisting,
+      });
+
+      return res.json({
+        success: true,
+        totalProcessed: progress.totalProcessed,
+        totalCreated: progress.totalCreated,
+        totalUpdated: progress.totalUpdated,
+        totalFailed: progress.totalFailed,
+        errors: progress.errors.slice(0, 20),
+      });
+    } catch (error: any) {
+      console.error('Error importing Mindat CSV:', error);
+      return res.status(500).json({
+        error: 'Mindat CSV import failed',
+        message: error.message,
+      });
+    }
+  });
+
+  // Clear Mindat CSV data
+  app.post('/api/mindat-csv/clear', async (req: Request, res: Response) => {
+    try {
+      await mindatCSVImport.clearMindatData();
+      return res.json({ success: true, message: 'Mindat CSV data cleared' });
+    } catch (error: any) {
+      console.error('Error clearing Mindat CSV data:', error);
+      return res.status(500).json({
+        error: 'Failed to clear Mindat CSV data',
+        message: error.message,
+      });
+    }
+  });
+
+  // Get Mindat CSV import stats
+  app.get('/api/mindat-csv/stats', async (req: Request, res: Response) => {
+    try {
+      const stats = await mindatCSVImport.getImportStats();
+      return res.json(stats);
+    } catch (error: any) {
+      console.error('Error getting Mindat CSV stats:', error);
+      return res.status(500).json({
+        error: 'Failed to get stats',
+        message: error.message,
+      });
+    }
+  });
+
+  // Incremental Sync Endpoints
+
+  // Sync new minerals from Mindat API
+  app.post('/api/mindat/sync/incremental', async (req: Request, res: Response) => {
+    try {
+      const {
+        startId,
+        endId,
+        batchSize = 100,
+      } = req.body;
+
+      console.log(`Starting incremental sync: ${startId || 'auto'} to ${endId || 'auto'}`);
+
+      const progress = await incrementalSync.syncNewMinerals({
+        startId,
+        endId,
+        batchSize,
+      });
+
+      return res.json({
+        success: true,
+        totalChecked: progress.totalChecked,
+        newMinerals: progress.newMinerals,
+        updatedMinerals: progress.updatedMinerals,
+        deletedMinerals: progress.deletedMinerals,
+        errors: progress.errors.slice(0, 20),
+      });
+    } catch (error: any) {
+      console.error('Error in incremental sync:', error);
+      return res.status(500).json({
+        error: 'Incremental sync failed',
+        message: error.message,
+      });
+    }
+  });
+
+  // Validate existing minerals for changes
+  app.post('/api/mindat/sync/validate', async (req: Request, res: Response) => {
+    try {
+      const {
+        sampleSize = 1000,
+        olderThan,
+      } = req.body;
+
+      console.log(`Validating ${sampleSize} existing minerals for changes...`);
+
+      const progress = await incrementalSync.validateExistingMinerals({
+        sampleSize,
+        olderThan: olderThan ? new Date(olderThan) : undefined,
+      });
+
+      return res.json({
+        success: true,
+        totalChecked: progress.totalChecked,
+        updatedMinerals: progress.updatedMinerals,
+        deletedMinerals: progress.deletedMinerals,
+        errors: progress.errors.slice(0, 20),
+      });
+    } catch (error: any) {
+      console.error('Error validating minerals:', error);
+      return res.status(500).json({
+        error: 'Validation failed',
+        message: error.message,
+      });
+    }
+  });
+
+  // Get sync statistics
+  app.get('/api/mindat/sync/stats', async (req: Request, res: Response) => {
+    try {
+      const stats = await incrementalSync.getSyncStats();
+      return res.json(stats);
+    } catch (error: any) {
+      console.error('Error getting sync stats:', error);
+      return res.status(500).json({
+        error: 'Failed to get stats',
+        message: error.message,
+      });
+    }
+  });
+
+  // Manual trigger endpoints for testing scheduled jobs
+
+  // Manually trigger daily sync
+  app.post('/api/mindat/sync/trigger/daily', async (req: Request, res: Response) => {
+    try {
+      console.log('📣 Manual trigger: daily sync');
+
+      // Return immediately and run in background
+      res.json({
+        success: true,
+        message: 'Daily sync triggered. Check server logs for progress.',
+      });
+
+      // Run sync in background
+      triggerDailySync().catch(err => {
+        console.error('Background daily sync error:', err);
+      });
+    } catch (error: any) {
+      console.error('Error triggering daily sync:', error);
+      return res.status(500).json({
+        error: 'Failed to trigger daily sync',
+        message: error.message,
+      });
+    }
+  });
+
+  // Manually trigger weekly validation
+  app.post('/api/mindat/sync/trigger/weekly', async (req: Request, res: Response) => {
+    try {
+      console.log('📣 Manual trigger: weekly validation');
+
+      // Return immediately and run in background
+      res.json({
+        success: true,
+        message: 'Weekly validation triggered. Check server logs for progress.',
+      });
+
+      // Run validation in background
+      triggerWeeklyValidation().catch(err => {
+        console.error('Background validation error:', err);
+      });
+    } catch (error: any) {
+      console.error('Error triggering weekly validation:', error);
+      return res.status(500).json({
+        error: 'Failed to trigger weekly validation',
         message: error.message,
       });
     }

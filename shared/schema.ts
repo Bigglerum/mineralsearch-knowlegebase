@@ -335,6 +335,18 @@ export const dataConflicts = pgTable("data_conflicts", {
   unresolvedIdx: index("data_conflict_unresolved_idx").on(table.status, table.severity),
 }));
 
+export const mineralChanges = pgTable("mineral_changes", {
+  id: serial("id").primaryKey(),
+  mindatId: integer("mindat_id").notNull(),
+  changeType: varchar("change_type", { length: 20 }).notNull(), // deleted, merged, modified
+  mergedIntoId: integer("merged_into_id"),
+  notes: text("notes"),
+  detectedAt: timestamp("detected_at").notNull().defaultNow(),
+}, (table) => ({
+  mindatIdIdx: index("mineral_changes_mindat_id_idx").on(table.mindatId),
+  changeTypeIdx: index("mineral_changes_type_idx").on(table.changeType),
+}));
+
 export const minerals = pgTable("minerals", {
   id: serial("id").primaryKey(),
   mindatId: integer("mindat_id").unique(),
@@ -546,6 +558,14 @@ export type IonicChemistry = typeof ionicChemistry.$inferSelect;
 
 export type InsertDataConflict = z.infer<typeof insertDataConflictSchema>;
 export type DataConflict = typeof dataConflicts.$inferSelect;
+
+export const insertMineralChangeSchema = createInsertSchema(mineralChanges).omit({
+  id: true,
+  detectedAt: true,
+});
+
+export type InsertMineralChange = z.infer<typeof insertMineralChangeSchema>;
+export type MineralChange = typeof mineralChanges.$inferSelect;
 
 export type InsertMineral = z.infer<typeof insertMineralSchema>;
 export type Mineral = typeof minerals.$inferSelect;
