@@ -1,0 +1,13 @@
+{
+  "comment": "Manual exceptions for e-Rocks data enrichment",
+  "exceptions": {
+    "example_nid_123": {
+      "action": "skip",
+      "reason": "Duplicate of NID 456"
+    },
+    "example_nid_789": {
+      "preferredMatch": 1234,
+      "reason": "Manual override - better match"
+    }
+  }
+}
