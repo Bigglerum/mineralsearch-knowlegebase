@@ -42,7 +42,7 @@ async function exportFromNeon() {
       ima_formula,
       CASE
         WHEN strunz10ed1 IS NOT NULL AND strunz10ed1 != '0' AND strunz10ed2 IS NOT NULL AND strunz10ed3 IS NOT NULL AND strunz10ed4 IS NOT NULL
-        THEN strunz10ed1 || '.' || strunz10ed2 || strunz10ed3 || '.' || strunz10ed4
+        THEN strunz10ed1 || '.' || strunz10ed2 || strunz10ed3 || '.' || LPAD(strunz10ed4, 2, '0')
         WHEN strunz10ed1 IS NOT NULL AND strunz10ed1 != '0' AND strunz10ed2 IS NOT NULL AND strunz10ed3 IS NOT NULL
         THEN strunz10ed1 || '.' || strunz10ed2 || strunz10ed3 || '.x'
         WHEN strunz10ed1 IS NOT NULL AND strunz10ed1 != '0' AND strunz10ed2 IS NOT NULL
