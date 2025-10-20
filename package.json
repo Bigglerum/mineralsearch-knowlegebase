@@ -10,7 +10,14 @@
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "enrich-erocks": "tsx scripts/enrich-erocks-data.ts",
-    "resolve-relationships": "tsx scripts/resolve-relationships.ts"
+    "resolve-relationships": "tsx scripts/resolve-relationships.ts",
+    "fix-strunz": "tsx scripts/fix-incomplete-strunz.ts",
+    "clean-fix-strunz": "tsx scripts/clean-and-fix-strunz.ts",
+    "fix-strunz-by-name": "tsx scripts/fix-strunz-by-name.ts",
+    "add-strunz-placeholder": "tsx scripts/add-strunz-placeholder.ts",
+    "filter-discredited": "tsx scripts/filter-discredited-minerals.ts",
+    "convert-formula": "tsx scripts/convert-formula-to-unicode.ts",
+    "match-exceptions": "tsx scripts/match-exceptions.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
